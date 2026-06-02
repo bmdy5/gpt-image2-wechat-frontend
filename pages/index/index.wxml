@@ -40,6 +40,11 @@
             bindinput="onPromptInput"
           />
           
+          <!-- One-click Clear Button (右上角毛玻璃圆形小叉) -->
+          <view class="clear-button {{promptText.length > 0 && !isGenerating ? 'show' : ''}}" catchtap="clearPromptInput">
+            <view class="icon-clear-x">×</view>
+          </view>
+          
           <!-- Upload Reference Image Component -->
           <view class="ref-upload-container">
             <!-- AI Enhance Toggle Button (并列排在参考图左边) -->

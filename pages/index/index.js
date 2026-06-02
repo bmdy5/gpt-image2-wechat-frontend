@@ -191,6 +191,17 @@ Page({
     });
   },
 
+  clearPromptInput() {
+    if (this.data.isGenerating) return;
+    this.setData({
+      promptText: '',
+      charCount: 0
+    });
+    wx.vibrateShort({
+      type: 'light'
+    });
+  },
+
   chooseReferenceImage() {
     if (this.data.isGenerating) return;
     wx.chooseMedia({
