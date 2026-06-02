@@ -23,8 +23,17 @@
          ============================================================ -->
     <block wx:if="{{activeTab === 'home'}}">
       <view class="generation-view">
+        <!-- Refine Banner -->
+        <view class="refine-banner border-hairline" wx:if="{{isRefining}}">
+          <view class="refine-banner-left">
+            <view class="icon-wand-sparkle"></view>
+            <text class="refine-banner-text">✨ 正在免费精修迭代 (额度: {{iterationsLeft}}次 | 倒计时: {{refineTimeStr}})</text>
+          </view>
+          <view class="refine-cancel-btn" catchtap="cancelRefine">取消</view>
+        </view>
+
         <!-- Textarea Container -->
-        <view class="textarea-wrapper border-hairline {{isEnhancing ? 'ai-enhancing-border' : ''}}">
+        <view class="textarea-wrapper border-hairline {{isEnhancing ? 'ai-enhancing-border' : ''}} {{isRefining ? 'refining-glow-border' : ''}}">
           <textarea 
             class="prompt-input" 
             placeholder="输入你想生成的画面描述..." 
@@ -123,13 +132,13 @@
               wx:key="id" 
               class="waterfall-item {{item.isFading ? 'fade-out' : ''}}"
             >
-              <view class="waterfall-card border-hairline">
+              <view class="waterfall-card">
                 <image class="card-img" src="{{item.img}}" mode="widthFix" bindtap="openPreview" data-img="{{item.img}}" data-id="{{item.id}}"></image>
                 
                 <!-- Floating Action Overlays -->
                 <view class="card-actions-overlay">
-                  <view class="card-action-btn" bindtap="fillPrompt" data-text="{{item.desc}}" data-tab-switch="true">
-                    <view class="icon-retry"></view>
+                  <view class="card-action-btn" catchtap="handleRefine" data-item="{{item}}">
+                    <view class="icon-wand"></view>
                   </view>
                   
                   <view class="card-action-btn delete-btn" bindtap="deleteGalleryItem" data-id="{{item.id}}">
@@ -600,6 +609,14 @@
         <view class="preview-btn btn-share" hover-class="btn-hover" bindtap="shareImage">
           <view class="icon-btn-svg icon-share"></view>
           <text class="btn-label">分享</text>
+        </view>
+
+        <view class="divider-v-cockpit"></view>
+
+        <!-- Refine / Micro-adjustment Button (魔法棒精修) -->
+        <view class="preview-btn btn-refine" hover-class="btn-hover" bindtap="handleRefineFromPreview">
+          <view class="icon-btn-svg icon-wand-light"></view>
+          <text class="btn-label">微调</text>
         </view>
       </view>
     </view>

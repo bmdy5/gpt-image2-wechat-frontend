@@ -92,7 +92,16 @@ Page({
     disableStardust: false,
     checkedInToday: false,
     signDays: 3,
-    hasFavorites: false
+    hasFavorites: false,
+    
+    // SaaS Token Economy & Iteration States
+    iterationsLeft: 0,
+    iterationExpireTime: 0,
+    lastPrompt: '',
+    isRefining: false,
+    refineParentId: null,
+    refineRootId: null,
+    refineTimeStr: '10:00'
   },
 
   // Page local constants
@@ -139,6 +148,10 @@ Page({
     }
     if (this.fxCanvasNode && this.fxAnimId) {
       this.fxCanvasNode.cancelAnimationFrame(this.fxAnimId);
+    }
+    if (this.refineTimer) {
+      clearInterval(this.refineTimer);
+      this.refineTimer = null;
     }
   },
 
@@ -314,6 +327,166 @@ Page({
       charCount: newText.length,
       styleModalVisible: false
     });
+  },
+
+  // ========================================================
+  // MAGIC WAND ITERATIVE REFINE SYSTEM LOGIC (PHASE 3)
+  // ========================================================
+  handleRefine(e) {
+    if (this.data.isGenerating) return;
+    
+    let item = null;
+    if (e && e.currentTarget && e.currentTarget.dataset) {
+      item = e.currentTarget.dataset.item;
+    } else {
+      item = e;
+    }
+    
+    if (!item) return;
+
+    const now = Date.now();
+    const itemMode = item.mode || 'basic';
+    const createdAt = item.createdAt || 0;
+    const maxIterations = itemMode === 'flagship' ? 3 : (itemMode === 'advanced' ? 2 : 0);
+    
+    if (maxIterations === 0) {
+      wx.showToast({
+        title: '普通模式不支持微调迭代',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+
+    // Check 10-minute time window (600,000 milliseconds)
+    const isExpired = !createdAt || (now - createdAt > 10 * 60 * 1000);
+    
+    if (isExpired) {
+      wx.showModal({
+        title: '迭代超时',
+        content: '该画作已超过 10 分钟的时空免费微调窗口，后续微调将作为全新生成（正常消耗灵感值）。是否继续？',
+        confirmText: '继续',
+        cancelText: '取消',
+        confirmColor: '#a13a00',
+        success: (res) => {
+          if (res.confirm) {
+            this.setData({
+              promptText: item.desc,
+              charCount: item.desc.length,
+              refImgUrl: item.img,
+              currentMode: itemMode,
+              currentModeLabel: itemMode === 'flagship' ? '旗舰模式 (15点)' : '进阶模式 (10点)',
+              activeTab: 'home',
+              isRefining: false
+            });
+            wx.pageScrollTo({
+              scrollTop: 0,
+              duration: 300
+            });
+          }
+        }
+      });
+      return;
+    }
+
+    const expireTime = createdAt + 10 * 60 * 1000;
+    
+    this.setData({
+      isRefining: true,
+      refineParentId: item.id,
+      refineRootId: item.rootId || item.id,
+      iterationsLeft: maxIterations,
+      iterationExpireTime: expireTime,
+      promptText: item.desc,
+      charCount: item.desc.length,
+      refImgUrl: item.img,
+      currentMode: itemMode,
+      currentModeLabel: itemMode === 'flagship' ? '旗舰模式 (15点)' : '进阶模式 (10点)',
+      activeTab: 'home'
+    });
+
+    wx.showToast({
+      title: '已激活免费微调模式',
+      icon: 'success',
+      duration: 1500
+    });
+
+    wx.pageScrollTo({
+      scrollTop: 0,
+      duration: 300
+    });
+
+    this.startRefineTimer();
+  },
+
+  handleRefineFromPreview() {
+    const itemId = this.data.previewItemId;
+    if (!itemId) return;
+    
+    const item = this.data.galleryItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    this.closePreview();
+    this.handleRefine(item);
+  },
+
+  cancelRefine() {
+    if (this.refineTimer) {
+      clearInterval(this.refineTimer);
+      this.refineTimer = null;
+    }
+
+    this.setData({
+      isRefining: false,
+      refineParentId: null,
+      refineRootId: null,
+      refineTimeStr: '10:00',
+      refImgUrl: ''
+    });
+
+    wx.showToast({
+      title: '已退出微调精修',
+      icon: 'none',
+      duration: 1500
+    });
+  },
+
+  startRefineTimer() {
+    if (this.refineTimer) {
+      clearInterval(this.refineTimer);
+      this.refineTimer = null;
+    }
+
+    const updateTimerStr = () => {
+      const now = Date.now();
+      const remain = this.data.iterationExpireTime - now;
+      if (remain <= 0 || this.data.iterationsLeft <= 0) {
+        clearInterval(this.refineTimer);
+        this.refineTimer = null;
+        this.setData({
+          isRefining: false,
+          refineTimeStr: '00:00'
+        });
+        wx.showToast({
+          title: '免费迭代时间已截止',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+
+      const totalSeconds = Math.floor(remain / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      
+      this.setData({
+        refineTimeStr: timeStr
+      });
+    };
+
+    updateTimerStr();
+    this.refineTimer = setInterval(updateTimerStr, 1000);
   },
 
   stopBubble() {
@@ -532,16 +705,21 @@ Page({
   },
 
   dailyCheckIn() {
+    if (this.data.checkedInToday) return;
+
+    const currentDays = this.data.signDays;
+    const reward = 5 + currentDays;
+
     this.setData({
       checkedInToday: true,
-      inspirationPoints: this.data.inspirationPoints + 2,
-      signDays: this.data.signDays + 1
+      inspirationPoints: this.data.inspirationPoints + reward,
+      signDays: currentDays + 1
     });
 
     wx.showToast({
-      title: '签到成功！灵感值+2',
-      icon: 'success',
-      duration: 1500
+      title: `连续签到 ${currentDays + 1} 天！灵感值 +${reward}`,
+      icon: 'none',
+      duration: 2000
     });
   },
 
@@ -699,7 +877,39 @@ Page({
       return;
     }
 
-    const cost = this.data.currentMode === 'flagship' ? 5 : (this.data.currentMode === 'advanced' ? 2 : 1);
+    const isRefine = this.data.isRefining;
+    const now = Date.now();
+    
+    // 校验迭代是否超时 (10分钟时空窗口，600000毫秒)
+    let isRefineValid = false;
+    if (isRefine) {
+      if (this.data.iterationsLeft > 0 && now < this.data.iterationExpireTime) {
+        isRefineValid = true;
+      } else {
+        wx.showToast({
+          title: this.data.iterationsLeft === 0 ? '免费迭代额度已耗尽' : '免费迭代已超时失效',
+          icon: 'none',
+          duration: 2000
+        });
+        this.setData({
+          isRefining: false
+        });
+        if (this.refineTimer) {
+          clearInterval(this.refineTimer);
+          this.refineTimer = null;
+        }
+        return;
+      }
+    }
+
+    // 灵感值消耗逻辑自愈对账 (普通5，进阶10，旗舰15)
+    let cost = 0;
+    if (isRefineValid) {
+      cost = 0; // 免费迭代不扣除灵感值
+    } else {
+      cost = this.data.currentMode === 'flagship' ? 15 : (this.data.currentMode === 'advanced' ? 10 : 5);
+    }
+
     if (this.data.inspirationPoints < cost) {
       wx.showModal({
         title: '生成受阻',
@@ -720,7 +930,7 @@ Page({
 
     let centerX = this.canvasWidth / 2;
     let centerY = this.canvasHeight - 120 - (this.data.safeAreaBottom);
-    if (e && e.detail && e.detail.x) {
+    if (e && e.detail && e.detail.x && e.detail.x > 1) {
       centerX = e.detail.x;
       centerY = e.detail.y;
     }
@@ -755,9 +965,23 @@ Page({
       });
     }
 
+    // 计算下一个迭代状态
+    let nextIterations = 0;
+    let nextExpireTime = 0;
+    if (!isRefineValid) {
+      nextIterations = mode === 'flagship' ? 3 : (mode === 'advanced' ? 2 : 0);
+      nextExpireTime = now + 10 * 60 * 1000; // 10分钟时空窗口
+    } else {
+      nextIterations = this.data.iterationsLeft - 1;
+      nextExpireTime = this.data.iterationExpireTime; // 继承上次超时时间
+    }
+
     this.setData({
       isGenerating: true,
-      inspirationPoints: this.data.inspirationPoints - cost
+      inspirationPoints: this.data.inspirationPoints - cost,
+      iterationsLeft: nextIterations,
+      iterationExpireTime: nextExpireTime,
+      lastPrompt: prompt
     });
 
     // Simulate model inference and automatically add generated art to history gallery!
@@ -770,20 +994,39 @@ Page({
         id: newId,
         img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYorjDASP6BiWN8BqUMV6co7VAkYKnXG-Wf8un89g-YL5MoDccZKhp_3HeLPhilkQxtPBDhuty19WHFoCbuT1YpBN120gGaPTC5paIy72m39c6GnIl_nnbn_JzXzODKR1eIfUE1WTBJELckV3kPwyf9J73afPE33chKZGkh0SUNmCWGc_C2Em84YFdPc3mHWF3I3GZZFGoebKC-xdZaBPyoIih2xCPWu6tJYWTTuOH9woDvPJ6-qdt4RBHgHaooEzQh2-rKiE6aQ',
         desc: prompt,
-        isFading: false
+        isFading: false,
+        mode: this.data.currentMode,
+        createdAt: Date.now(),
+        rootId: this.data.refineRootId || null
       });
+
+      const latestImg = newItems[0].img;
+      const shouldKeepRefining = isRefineValid && nextIterations > 0 && Date.now() < this.data.iterationExpireTime;
+      
+      if (!shouldKeepRefining) {
+        if (this.refineTimer) {
+          clearInterval(this.refineTimer);
+          this.refineTimer = null;
+        }
+      }
 
       this.setData({
         isGenerating: false,
-        promptText: '',
-        charCount: 0,
-        refImgUrl: '', // Reset reference image status
+        promptText: shouldKeepRefining ? prompt : '',
+        charCount: shouldKeepRefining ? prompt.length : 0,
+        refImgUrl: shouldKeepRefining ? latestImg : '',
+        refineParentId: shouldKeepRefining ? newId : null,
+        isRefining: shouldKeepRefining,
         galleryItems: newItems
       });
 
+      let modalContent = isRefineValid 
+        ? `您的AI艺术品微调迭代成功！本次不消耗灵感值，当前模式剩余免费迭代额度：${nextIterations}次。`
+        : `您的AI艺术品已生成成功，并已同步归入历史画库！当前模式享有免费迭代额度：${nextIterations}次（10分钟内有效）。`;
+
       wx.showModal({
-        title: '生成成功',
-        content: '您的AI艺术品已生成成功，并已同步归入历史画库！',
+        title: isRefineValid ? '迭代成功' : '生成成功',
+        content: modalContent,
         confirmText: '去画库查看',
         cancelText: '留在首页',
         confirmColor: '#a13a00',

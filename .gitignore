@@ -1,3 +1,4 @@
 node_modules/
 test_screen_*.png
 .DS_Store
+tests/
