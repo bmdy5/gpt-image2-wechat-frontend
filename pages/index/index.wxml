@@ -91,9 +91,9 @@
 
           <!-- Dropdown Popup for Mode Selection -->
           <view class="mode-dropdown-menu border-hairline {{modeDropdownVisible ? 'show' : ''}}">
-            <view class="mode-option {{currentMode === 'basic' ? 'selected' : ''}}" bindtap="selectMode" data-mode="basic" data-label="普通模式">普通模式</view>
-            <view class="mode-option {{currentMode === 'advanced' ? 'selected' : ''}}" bindtap="selectMode" data-mode="advanced" data-label="进阶模式">进阶模式</view>
-            <view class="mode-option {{currentMode === 'flagship' ? 'selected' : ''}}" bindtap="selectMode" data-mode="flagship" data-label="旗舰模式">旗舰模式</view>
+            <view class="mode-option {{currentMode === 'basic' ? 'selected' : ''}}" bindtap="selectMode" data-mode="basic" data-label="普通模式">普通模式 (1点/次)</view>
+            <view class="mode-option {{currentMode === 'advanced' ? 'selected' : ''}}" bindtap="selectMode" data-mode="advanced" data-label="进阶模式">进阶模式 (2点/次)</view>
+            <view class="mode-option {{currentMode === 'flagship' ? 'selected' : ''}}" bindtap="selectMode" data-mode="flagship" data-label="旗舰模式">旗舰模式 (5点/次)</view>
           </view>
         </view>
 
@@ -198,29 +198,61 @@
           </view>
         </view>
 
-        <!-- Promotion Banner -->
-        <!-- Promotion Banner -->
-        <view class="promo-banner border-hairline" bindtap="toggleTaskCollapse">
-          <view class="promo-left">
-            <view class="check-icon-circle">✓</view>
-            <text class="promo-text">赚取更多灵感值</text>
-          </view>
-          <!-- Image SVG: chevron-right -->
-          <view class="chevron-right icon-chevron {{taskCollapsed ? 'rotate-90' : ''}}"></view>
+        <!-- ============================================================
+             NEW HIGH-FIDELITY TASKS PANEL (灵感页高保真任务中心 - 全量下沉平铺)
+             ============================================================ -->
+        <view class="tasks-section-title mt-6">
+          <text class="section-label">赚取更多灵感值</text>
         </view>
 
-        <!-- Task Item: Watch Video -->
-        <view class="video-task-card border-hairline mt-3 {{taskCollapsed ? 'collapsed' : ''}}" bindtap="{{taskCollapsed ? '' : 'watchVideoPoints'}}">
-          <view class="video-task-left">
-            <!-- Image SVG: play-icon -->
-            <view class="play-icon icon-play"></view>
-            <view class="video-task-meta">
-              <text class="video-task-title">观看视频领灵感值</text>
-              <text class="video-task-reward">+5 灵感值</text>
+        <!-- 连续签到卡片 -->
+        <view class="daily-checkin-card border-hairline mt-3">
+          <view class="checkin-left">
+            <text class="checkin-tag">连续签到</text>
+            <text class="checkin-days-text"><text class="checkin-days-num">{{signDays}}</text> 天</text>
+          </view>
+          <button class="checkin-btn {{checkedInToday ? 'disabled' : ''}}" bindtap="{{checkedInToday ? '' : 'dailyCheckIn'}}">
+            {{checkedInToday ? '已签到' : '立即签到'}}
+          </button>
+        </view>
+
+        <!-- 任务项 1：邀请好友助力裂变 (利用 open-type="share" 原生拉起) -->
+        <button class="task-row-button-reset mt-3" open-type="share" data-sharetype="invite">
+          <view class="task-row-card border-hairline">
+            <view class="task-row-left">
+              <view class="task-circle-icon share-theme" style="background-color: rgba(9, 109, 217, 0.06);">
+                <view class="share-svg-net" style="color: rgba(9, 109, 217, 0.95);">❖</view>
+              </view>
+              <view class="task-row-meta">
+                <text class="task-row-title">邀请微信好友助力</text>
+                <text class="task-row-desc">每邀请一位新用户进入，奖励均分下发</text>
+              </view>
+            </view>
+            <view class="task-row-reward">
+              <text class="reward-val">+5</text>
+              <text class="reward-unit">点</text>
             </view>
           </view>
-          <text class="go-watch-btn">去观看</text>
-        </view>
+        </button>
+
+        <!-- 任务项 2：日常杰作分享 -->
+        <button class="task-row-button-reset mt-3" open-type="share" data-sharetype="work">
+          <view class="task-row-card border-hairline">
+            <view class="task-row-left">
+              <view class="task-circle-icon play-theme" style="background-color: rgba(161, 58, 0, 0.06);">
+                <view class="play-svg-arrow" style="color: var(--primary);">▶</view>
+              </view>
+              <view class="task-row-meta">
+                <text class="task-row-title">分享杰作给好友</text>
+                <text class="task-row-desc">每日首次将数字艺术画推送至微信群聊</text>
+              </view>
+            </view>
+            <view class="task-row-reward">
+              <text class="reward-val">+3</text>
+              <text class="reward-unit">点</text>
+            </view>
+          </view>
+        </button>
 
         <!-- Collapsible Recharge Section (Feature Toggle 物理隐藏控制) -->
         <block wx:if="{{showRechargeSection}}">

@@ -12,7 +12,7 @@ Page({
     activeTab: 'home', // 'home' | 'gallery' | 'inspiration' | 'profile'
     inspirationPoints: 80,
     currentMode: 'basic', // 'basic' | 'advanced' | 'flagship'
-    currentModeLabel: '普通模式',
+    currentModeLabel: '普通模式 (1点)',
     
     isEnhancing: false,
     isGenerating: false,
@@ -20,7 +20,7 @@ Page({
     charCount: 0,
     refImgUrl: '', // Reference image path
     mainContentPaddingBottom: 120, // Content view bottom spacing
-    isAutomatorTest: true, // Automation testing environment flag
+    isAutomatorTest: false, // 默认设为 false，确保用户在真机/模拟器手动调试时 100% 能够享受到动态 Stardust 特效
     
     styleModalVisible: false,
     modeDropdownVisible: false,
@@ -255,9 +255,14 @@ Page({
     const label = e.currentTarget.dataset.label;
     if (this.data.isGenerating) return;
 
+    // 动态映射不同模式对应的灵感值消耗价格，实时同步胶囊栏的文本展示
+    let costLabel = '普通模式 (1点)';
+    if (mode === 'advanced') costLabel = '进阶模式 (2点)';
+    if (mode === 'flagship') costLabel = '旗舰模式 (5点)';
+
     this.setData({
       currentMode: mode,
-      currentModeLabel: label,
+      currentModeLabel: costLabel,
       modeDropdownVisible: false
     }, () => {
       this.initStardustParticles();
@@ -762,6 +767,33 @@ Page({
         }
       });
     }, 3000);
+  },
+
+  // ========================================================
+  // WECHAT NATIVE REFERRAL SHAREAttribution SYSTEM
+  // ========================================================
+  onShareAppMessage(res) {
+    const uid = '8273641'; // 仿真当前用户唯一识别 UID
+    let title = 'Visionary AI - 您的专属创意 AI 艺术生成助手';
+    let path = `/pages/index/index?inviter=${uid}`;
+
+    // 核心自愈：若分享来自邀请助力或分享画作按钮，动态定制微信卡片标题文案
+    if (res && res.from === 'button') {
+      const target = res.target;
+      const shareType = target.dataset.sharetype;
+      
+      if (shareType === 'invite') {
+        title = '【助力礼包】快来帮我点一下！免费领创意灵感值，一起创作精美 AI 艺术画！';
+      } else if (shareType === 'work') {
+        title = '我刚刚在 Visionary AI 创作了一幅极美的数字艺术画，快来一起看看吧！';
+      }
+    }
+
+    return {
+      title: title,
+      path: path,
+      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYorjDASP6BiWN8BqUMV6co7VAkYKnXG-Wf8un89g-YL5MoDccZKhp_3HeLPhilkQxtPBDhuty19WHFoCbuT1YpBN120gGaPTC5paIy72m39c6GnIl_nnbn_JzXzODKR1eIfUE1WTBJELckV3kPwyf9J73afPE33chKZGkh0SUNmCWGc_C2Em84YFdPc3mHWF3I3GZZFGoebKC-xdZaBPyoIih2xCPWu6tJYWTTuOH9woDvPJ6-qdt4RBHgHaooEzQh2-rKiE6aQ'
+    };
   },
 
   // ========================================================
