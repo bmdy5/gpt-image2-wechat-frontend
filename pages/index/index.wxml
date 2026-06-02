@@ -98,9 +98,9 @@
 
           <!-- Dropdown Popup for Mode Selection -->
           <view class="mode-dropdown-menu border-hairline {{modeDropdownVisible ? 'show' : ''}}">
-            <view class="mode-option {{currentMode === 'basic' ? 'selected' : ''}}" bindtap="selectMode" data-mode="basic" data-label="普通模式">普通模式 (1点/次)</view>
-            <view class="mode-option {{currentMode === 'advanced' ? 'selected' : ''}}" bindtap="selectMode" data-mode="advanced" data-label="进阶模式">进阶模式 (2点/次)</view>
-            <view class="mode-option {{currentMode === 'flagship' ? 'selected' : ''}}" bindtap="selectMode" data-mode="flagship" data-label="旗舰模式">旗舰模式 (5点/次)</view>
+            <view class="mode-option {{currentMode === 'basic' ? 'selected' : ''}}" bindtap="selectMode" data-mode="basic" data-label="普通模式">普通模式 (5点/次)</view>
+            <view class="mode-option {{currentMode === 'advanced' ? 'selected' : ''}}" bindtap="selectMode" data-mode="advanced" data-label="进阶模式">进阶模式 (10点/次)</view>
+            <view class="mode-option {{currentMode === 'flagship' ? 'selected' : ''}}" bindtap="selectMode" data-mode="flagship" data-label="旗舰模式">旗舰模式 (15点/次)</view>
           </view>
         </view>
 

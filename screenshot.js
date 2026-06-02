@@ -11,8 +11,12 @@ async function run() {
 
     console.log('已成功连接小程序模拟器！正在实时监听小程序控制台日志...');
     miniProgram.on('console', msg => {
-      if (msg && msg.text) {
-        console.log(`[MINIPROGRAM CONSOLE] [${msg.type.toUpperCase()}] ${msg.text}`);
+      if (msg) {
+        const text = typeof msg.text === 'function' ? msg.text() : msg.text;
+        const msgType = typeof msg.type === 'function' ? msg.type() : msg.type;
+        if (text) {
+          console.log(`[MINIPROGRAM CONSOLE] [${String(msgType).toUpperCase()}] ${text}`);
+        }
       }
     });
 
@@ -46,12 +50,26 @@ async function run() {
     console.log(`正在生成粒子爆炸波峰截图: ${explosionPath}`);
     await miniProgram.screenshot({ path: explosionPath });
 
-    // 等待生成动画及震颤反馈余波完全平息
-    await activePage.waitFor(2500);
+    // 4. 由于小程序会自动物理切换至“画廊” Tab，并装载 pending 加载节点，此处我们直接等待 800ms 进行原地高保真截图
+    console.log('等待小程序自动物理切换至“画廊” Tab 并完成 pending 卡片渲染...');
+    await activePage.waitFor(800);
+    
+    const loadingPath = path.join(__dirname, 'test_screen_gallery_loading.png');
+    console.log(`正在生成画廊“AI绘制中”骨架卡片截图: ${loadingPath}`);
+    await miniProgram.screenshot({ path: loadingPath });
 
-    console.log('\n单点动效模拟点击及截图流程执行完毕，安全断开连接...');
-    await miniProgram.close();
-    console.log('测试完成！');
+    // 5. 保持在“画廊” Tab 原地，等待第二次轮询状态物理升级为 success 并弹出微信生图成功模态框
+    console.log('继续在“画廊” Tab 等待生图状态物理就绪并弹出成功模态框...');
+    await activePage.waitFor(2500); 
+
+    const successPath = path.join(__dirname, 'test_screen_success.png');
+    console.log(`正在生成E2E生图成功模态框截图: ${successPath}`);
+    await miniProgram.screenshot({ path: successPath });
+
+    console.log('\n单点动效模拟点击、画廊自愈级联及截图流程已执行，保持小程序处于打开状态...');
+    // await miniProgram.close();
+    console.log('测试完成！已保持运行状态供您验收。');
+
   } catch (error) {
     console.error('自动化回归中发生严重故障:', error);
     process.exit(1);

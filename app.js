@@ -1,7 +1,36 @@
+const { silentLogin } = require('./utils/api.js');
+
 App({
   onLaunch() {
     this.calculateSystemDimensions();
+    this.setupWeChatCredentials();
+    this.performSilentLogin();
   },
+
+  setupWeChatCredentials() {
+    const { request } = require('./utils/api.js');
+    request({
+      url: '/auth/wechat/setup-credentials',
+      method: 'GET'
+    }).then(res => {
+      console.log('--- [App onLaunch] WeChat credentials verified/stored successfully ---');
+    }).catch(err => {
+      // 忽略非本地调试/生产环境的正常报错
+      console.warn('--- [App onLaunch] WeChat credentials setup bypassed ---');
+    });
+  },
+
+  performSilentLogin() {
+    silentLogin()
+      .then(token => {
+        console.log('--- [App onLaunch] WeChat silent login succeeded, token stored ---');
+      })
+      .catch(err => {
+        console.error('--- [App onLaunch] WeChat silent login failed: ', err);
+      });
+  },
+
+
 
   calculateSystemDimensions() {
     const sysInfo = wx.getSystemInfoSync() || {};

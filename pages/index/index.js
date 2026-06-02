@@ -13,7 +13,7 @@ Page({
     activeTab: 'home', // 'home' | 'gallery' | 'inspiration' | 'profile'
     inspirationPoints: 80,
     currentMode: 'basic', // 'basic' | 'advanced' | 'flagship'
-    currentModeLabel: '普通模式 (1点)',
+    currentModeLabel: '普通模式 (5点)',
     
     isEnhancing: false,
     isGenerating: false,
@@ -342,9 +342,9 @@ Page({
     if (this.data.isGenerating) return;
 
     // 动态映射不同模式对应的灵感值消耗价格，实时同步胶囊栏的文本展示
-    let costLabel = '普通模式 (1点)';
-    if (mode === 'advanced') costLabel = '进阶模式 (2点)';
-    if (mode === 'flagship') costLabel = '旗舰模式 (5点)';
+    let costLabel = '普通模式 (5点)';
+    if (mode === 'advanced') costLabel = '进阶模式 (10点)';
+    if (mode === 'flagship') costLabel = '旗舰模式 (15点)';
 
     this.setData({
       currentMode: mode,
