@@ -106,9 +106,9 @@
 
         <!-- Quick Chips Tags -->
         <scroll-view class="suggestions-row" scroll-x enable-flex>
-          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="一只精致的白瓷茶杯，里面旋转着璀璨的微缩星系与星云，闪烁的星辰，微距摄影，梦幻荧光，极细腻材质纹理">茶杯里的微观星系</view>
-          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="一座深邃静谧的森林图书馆，书本如树木般从木质地板中拔地而起，书页幻化为翩翩飞舞的金色飞蛾，柔和金色丁达尔光晕">森林图书馆与飞蛾</view>
-          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="一座巨大的混凝土废土巨石遗迹，被发光且缓缓脉动的巨型深海珊瑚与藤蔓吞噬重夺，丁达尔神秘侧光，超精细废土美学">发光珊瑚与废土遗迹</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="仿真现实，80年代香港繁华街头，湿漉漉的雨后街道反射着红绿霓虹灯光，经典的复古双层巴士在夜色中穿行，胶片颗粒质感，超写实，纪实摄影，极细腻材质与怀旧色调">80年代霓虹香港</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="国潮现代水墨风，一位身着飘逸古装的剑客独立于山巅，衣袂随风舞动，背景是金粉与淡墨融合的璀璨星河，3D流体渲染结合传统笔触，虚实相生，意境深远">国潮水墨星辰</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="电影级微距摄影，一个精致的悬浮透明玻璃球，内部封存着一片生机盎然的微缩雨林与飞舞的发光荧光蝴蝶，晶莹剔透的水滴，丁达尔折射光晕，超精细材质纹理">玻璃球里的森林</view>
         </scroll-view>
       </view>
     </block>
@@ -132,20 +132,29 @@
               wx:key="id" 
               class="waterfall-item {{item.isFading ? 'fade-out' : ''}}"
             >
-              <view class="waterfall-card">
-                <image class="card-img" src="{{item.img}}" mode="widthFix" bindtap="openPreview" data-img="{{item.img}}" data-id="{{item.id}}"></image>
-                
-                <!-- Floating Action Overlays -->
-                <view class="card-actions-overlay">
-                  <view class="card-action-btn" catchtap="handleRefine" data-item="{{item}}">
-                    <view class="icon-wand"></view>
+              <view class="waterfall-card {{ (item.status === 'pending' || item.status === 'generating') ? 'card-loading-state' : '' }}">
+                <block wx:if="{{item.status === 'pending' || item.status === 'generating'}}">
+                  <view class="loading-container">
+                    <view class="spinner"></view>
+                    <text class="loading-tips">AI绘制中...</text>
                   </view>
+                </block>
+                <block wx:else>
+                  <image class="card-img" src="{{item.img}}" mode="widthFix" bindtap="openPreview" data-img="{{item.img}}" data-id="{{item.id}}"></image>
                   
-                  <view class="card-action-btn delete-btn" bindtap="deleteGalleryItem" data-id="{{item.id}}">
-                    <view class="icon-delete"></view>
+                  <!-- Floating Action Overlays -->
+                  <view class="card-actions-overlay">
+                    <view class="card-action-btn" catchtap="handleRefine" data-item="{{item}}">
+                      <view class="icon-wand"></view>
+                    </view>
+                    
+                    <view class="card-action-btn delete-btn" bindtap="deleteGalleryItem" data-id="{{item.id}}">
+                      <view class="icon-delete"></view>
+                    </view>
                   </view>
-                </view>
+                </block>
               </view>
+
               <view class="card-meta">
                 <text class="card-desc">{{item.desc}}</text>
               </view>

@@ -1,4 +1,5 @@
 const app = getApp();
+const { request } = require('../../utils/api.js');
 
 Page({
   data: {
@@ -135,6 +136,9 @@ Page({
 
     this.canvasWidth = globalData.screenWidth || 375;
     this.canvasHeight = globalData.screenHeight || 667;
+
+    // 拉取后端最新用户数据自愈
+    this.fetchUserProfile();
   },
 
   onReady() {
@@ -153,6 +157,53 @@ Page({
       clearInterval(this.refineTimer);
       this.refineTimer = null;
     }
+    if (this.generationPollTimer) {
+      clearInterval(this.generationPollTimer);
+      this.generationPollTimer = null;
+    }
+  },
+
+  fetchUserProfile() {
+    request({
+      url: '/auth/me',
+      method: 'GET'
+    }).then(res => {
+      if (res && res.points !== undefined) {
+        this.setData({
+          inspirationPoints: res.points,
+          checkedInToday: res.last_daily_reward ? (new Date(res.last_daily_reward).toDateString() === new Date().toDateString()) : false
+        });
+      }
+    }).catch(err => {
+      console.error('--- [index.js] 获取用户信息失败: ', err);
+    });
+  },
+
+  fetchHistoryGallery() {
+    request({
+      url: '/image/history?skip=0&limit=50',
+      method: 'GET'
+    }).then(res => {
+      if (Array.isArray(res)) {
+        const formattedItems = res.map(item => {
+          return {
+            id: item.id,
+            img: item.image_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYorjDASP6BiWN8BqUMV6co7VAkYKnXG-Wf8un89g-YL5MoDccZKhp_3HeLPhilkQxtPBDhuty19WHFoCbuT1YpBN120gGaPTC5paIy72m39c6GnIl_nnbn_JzXzODKR1eIfUE1WTBJELckV3kPwyf9J73afPE33chKZGkh0SUNmCWGc_C2Em84YFdPc3mHWF3I3GZZFGoebKC-xdZaBPyoIih2xCPWu6tJYWTTuOH9woDvPJ6-qdt4RBHgHaooEzQh2-rKiE6aQ',
+            desc: item.prompt,
+            isFading: false,
+            mode: item.quality === 'master' ? 'flagship' : (item.quality === 'hd' ? 'advanced' : 'basic'),
+            createdAt: new Date(item.created_at).getTime(),
+            rootId: item.root_id,
+            status: item.status
+          };
+        });
+        this.setData({
+          galleryItems: formattedItems
+        });
+      }
+    }).catch(err => {
+      console.error('--- [index.js] 拉取画廊历史失败: ', err);
+    });
   },
 
   // ========================================================
@@ -192,6 +243,14 @@ Page({
           this.initBgParticleCanvas();
         }
         this.initFxExplosionCanvas();
+        // 拉取最新点数资料
+        this.fetchUserProfile();
+      } else if (tab === 'gallery') {
+        // 切换到画廊时拉取真实历史
+        this.fetchHistoryGallery();
+      } else if (tab === 'profile') {
+        // 切换到个人中心时拉取真实资料
+        this.fetchUserProfile();
       }
     });
   },
@@ -298,8 +357,93 @@ Page({
 
   toggleEnhance() {
     if (this.data.isGenerating) return;
+    
+    // 防范重复点击并发调用
+    if (this.data.isEnhancing) return;
+
+    const rawPrompt = this.data.promptText || '';
+    const trimmedPrompt = rawPrompt.trim ? rawPrompt.trim() : rawPrompt;
+    if (!trimmedPrompt) {
+      wx.showToast({
+        title: '请先输入基础画面描述',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+
     this.setData({
-      isEnhancing: !this.data.isEnhancing
+      isEnhancing: true
+    });
+
+    wx.showLoading({
+      title: 'AI 智能润色中...',
+      mask: true
+    });
+
+    // 10秒前端时间物理兜底定时器，防止无限等待
+    let isFinished = false;
+    const timeoutTimer = setTimeout(() => {
+      if (isFinished) return;
+      isFinished = true;
+      wx.hideLoading();
+      this.setData({
+        isEnhancing: false
+      });
+      wx.showToast({
+        title: 'AI润色超时，请重试',
+        icon: 'none',
+        duration: 2000
+      });
+    }, 10000);
+
+    request({
+      url: '/image/enhance',
+      method: 'POST',
+      data: { prompt: trimmedPrompt },
+      timeout: 10000 // 微信底层网络请求 10 秒超时
+    }).then(res => {
+      if (isFinished) return;
+      isFinished = true;
+      clearTimeout(timeoutTimer);
+      wx.hideLoading();
+      this.setData({
+        isEnhancing: false
+      });
+
+      if (res && res.enhanced_prompt) {
+        this.setData({
+          promptText: res.enhanced_prompt,
+          charCount: res.enhanced_prompt.length
+        });
+        wx.showToast({
+          title: '润色成功',
+          icon: 'success',
+          duration: 1500
+        });
+        wx.vibrateShort({
+          type: 'medium'
+        });
+      } else {
+        wx.showToast({
+          title: '润色结果异常，请稍后重试',
+          icon: 'none'
+        });
+      }
+    }).catch(err => {
+      if (isFinished) return;
+      isFinished = true;
+      clearTimeout(timeoutTimer);
+      wx.hideLoading();
+      this.setData({
+        isEnhancing: false
+      });
+      console.error('AI 润色接口报错: ', err);
+      const errMsg = (err && err.data && err.data.detail) || '润色失败，请稍后重试';
+      wx.showToast({
+        title: errMsg,
+        icon: 'none'
+      });
     });
   },
 
@@ -535,22 +679,35 @@ Page({
 
     // 2. Filter out element from DOM after transition timeout (400ms)
     setTimeout(() => {
-      const filtered = this.data.galleryItems.filter(item => item.id !== itemId);
-      
-      // Clean up liked status if present
-      const liked = Object.assign({}, this.data.likedItems);
-      delete liked[itemId];
+      request({
+        url: `/image/${itemId}`,
+        method: 'DELETE'
+      }).then(() => {
+        const filtered = this.data.galleryItems.filter(item => item.id !== itemId);
+        
+        // Clean up liked status if present
+        const liked = Object.assign({}, this.data.likedItems);
+        delete liked[itemId];
 
-      this.setData({
-        galleryItems: filtered,
-        likedItems: liked,
-        deletingItemId: null
-      });
+        this.setData({
+          galleryItems: filtered,
+          likedItems: liked,
+          deletingItemId: null
+        });
 
-      wx.showToast({
-        title: '画作已成功删除',
-        icon: 'none',
-        duration: 1500
+        wx.showToast({
+          title: '画作已成功删除',
+          icon: 'none',
+          duration: 1500
+        });
+      }).catch(err => {
+        console.error('删除图片接口失败: ', err);
+        wx.showToast({
+          title: '删除失败，请稍后重试',
+          icon: 'none'
+        });
+        // 重新拉取画廊历史以同步最新状态
+        this.fetchHistoryGallery();
       });
     }, 400);
   },
@@ -707,19 +864,23 @@ Page({
   dailyCheckIn() {
     if (this.data.checkedInToday) return;
 
-    const currentDays = this.data.signDays;
-    const reward = 5 + currentDays;
-
-    this.setData({
-      checkedInToday: true,
-      inspirationPoints: this.data.inspirationPoints + reward,
-      signDays: currentDays + 1
-    });
-
-    wx.showToast({
-      title: `连续签到 ${currentDays + 1} 天！灵感值 +${reward}`,
-      icon: 'none',
-      duration: 2000
+    request({
+      url: '/auth/daily-reward',
+      method: 'POST'
+    }).then(res => {
+      this.fetchUserProfile();
+      wx.showToast({
+        title: '签到成功，灵感值已到账',
+        icon: 'success',
+        duration: 2000
+      });
+    }).catch(err => {
+      console.error('每日签到接口报错: ', err);
+      const errMsg = (err && err.data && err.data.detail) || '签到失败，请稍后重试';
+      wx.showToast({
+        title: errMsg,
+        icon: 'none'
+      });
     });
   },
 
@@ -942,7 +1103,6 @@ Page({
     // ========================================================
     const mode = this.data.currentMode;
     if (mode === 'flagship') {
-      // 旗舰模式：连环双重震颤模型 (Double-Strike Haptic Resonation)
       wx.vibrateShort({
         type: 'heavy',
         success: () => {
@@ -954,12 +1114,10 @@ Page({
         }
       });
     } else if (mode === 'advanced') {
-      // 进阶模式：中等弹性触感 (Medium segment rebound)
       wx.vibrateShort({
         type: 'medium'
       });
     } else {
-      // 普通模式：轻微清脆反馈 (Light quick tap)
       wx.vibrateShort({
         type: 'light'
       });
@@ -976,69 +1134,190 @@ Page({
       nextExpireTime = this.data.iterationExpireTime; // 继承上次超时时间
     }
 
-    this.setData({
-      isGenerating: true,
-      inspirationPoints: this.data.inspirationPoints - cost,
-      iterationsLeft: nextIterations,
-      iterationExpireTime: nextExpireTime,
-      lastPrompt: prompt
+    let qualityMap = 'standard';
+    if (mode === 'advanced') qualityMap = 'hd';
+    if (mode === 'flagship') qualityMap = 'master';
+
+    let currentIteration = 0;
+    if (isRefineValid) {
+      const maxIterations = mode === 'flagship' ? 3 : (mode === 'advanced' ? 2 : 0);
+      currentIteration = maxIterations - (this.data.iterationsLeft - 1);
+    }
+
+    wx.showLoading({
+      title: '正在上传任务...',
+      mask: true
     });
 
-    // Simulate model inference and automatically add generated art to history gallery!
-    setTimeout(() => {
-      const newItems = Array.from(this.data.galleryItems);
-      const newId = newItems.length > 0 ? Math.max(...newItems.map(i => i.id)) + 1 : 1;
+    request({
+      url: '/image/generate',
+      method: 'POST',
+      data: {
+        prompt: prompt,
+        quality: qualityMap,
+        style: 'default',
+        ref_image_url: this.data.refImgUrl || null,
+        parent_id: this.data.refineParentId || null,
+        root_id: this.data.refineRootId || null,
+        iteration: currentIteration
+      }
+    }).then(genRes => {
+      wx.hideLoading();
       
-      // Auto pre-append high fidelity image to gallery grid!
-      newItems.unshift({
-        id: newId,
-        img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYorjDASP6BiWN8BqUMV6co7VAkYKnXG-Wf8un89g-YL5MoDccZKhp_3HeLPhilkQxtPBDhuty19WHFoCbuT1YpBN120gGaPTC5paIy72m39c6GnIl_nnbn_JzXzODKR1eIfUE1WTBJELckV3kPwyf9J73afPE33chKZGkh0SUNmCWGc_C2Em84YFdPc3mHWF3I3GZZFGoebKC-xdZaBPyoIih2xCPWu6tJYWTTuOH9woDvPJ6-qdt4RBHgHaooEzQh2-rKiE6aQ',
+      const taskId = genRes.id;
+      
+      // 创建即时占位的 Pending 状态卡片
+      const pendingCard = {
+        id: taskId,
+        img: '',
         desc: prompt,
         isFading: false,
-        mode: this.data.currentMode,
+        mode: mode === 'flagship' ? 'flagship' : (mode === 'advanced' ? 'advanced' : 'basic'),
         createdAt: Date.now(),
-        rootId: this.data.refineRootId || null
-      });
-
-      const latestImg = newItems[0].img;
-      const shouldKeepRefining = isRefineValid && nextIterations > 0 && Date.now() < this.data.iterationExpireTime;
+        status: 'pending'
+      };
       
-      if (!shouldKeepRefining) {
-        if (this.refineTimer) {
-          clearInterval(this.refineTimer);
-          this.refineTimer = null;
-        }
-      }
-
       this.setData({
-        isGenerating: false,
-        promptText: shouldKeepRefining ? prompt : '',
-        charCount: shouldKeepRefining ? prompt.length : 0,
-        refImgUrl: shouldKeepRefining ? latestImg : '',
-        refineParentId: shouldKeepRefining ? newId : null,
-        isRefining: shouldKeepRefining,
-        galleryItems: newItems
+        activeTab: 'gallery',
+        isGenerating: true,
+        inspirationPoints: genRes.remaining_points !== undefined ? genRes.remaining_points : (this.data.inspirationPoints - cost),
+        iterationsLeft: nextIterations,
+        iterationExpireTime: nextExpireTime,
+        lastPrompt: prompt,
+        galleryItems: [pendingCard, ...this.data.galleryItems]
       });
 
-      let modalContent = isRefineValid 
-        ? `您的AI艺术品微调迭代成功！本次不消耗灵感值，当前模式剩余免费迭代额度：${nextIterations}次。`
-        : `您的AI艺术品已生成成功，并已同步归入历史画库！当前模式享有免费迭代额度：${nextIterations}次（10分钟内有效）。`;
-
+      // 启动轮询
+      this.pollGenerationStatus(taskId, isRefineValid, nextIterations, nextExpireTime, prompt, mode);
+    }).catch(err => {
+      wx.hideLoading();
+      console.error('生图发起接口失败: ', err);
+      const errMsg = (err && err.data && err.data.detail) || '发起生成失败，请稍后重试';
       wx.showModal({
-        title: isRefineValid ? '迭代成功' : '生成成功',
-        content: modalContent,
-        confirmText: '去画库查看',
-        cancelText: '留在首页',
-        confirmColor: '#a13a00',
-        success: (res) => {
-          if (res.confirm) {
-            this.setData({
-              activeTab: 'gallery'
-            });
-          }
-        }
+        title: '生成失败',
+        content: errMsg,
+        showCancel: false,
+        confirmColor: '#a13a00'
       });
-    }, 3000);
+      // 重新拉取积分自愈状态
+      this.fetchUserProfile();
+    });
+  },
+
+  pollGenerationStatus(taskId, isRefineValid, nextIterations, nextExpireTime, prompt, mode) {
+    if (this.generationPollTimer) {
+      clearInterval(this.generationPollTimer);
+    }
+    
+    let pollCount = 0;
+    const maxPolls = 60; // 最多轮询 120 秒
+    
+    this.generationPollTimer = setInterval(() => {
+      pollCount++;
+      if (pollCount > maxPolls) {
+        clearInterval(this.generationPollTimer);
+        this.generationPollTimer = null;
+        
+        // 超时就地过滤清理 pending 卡片，防止界面垃圾数据
+        const filteredItems = this.data.galleryItems.filter(item => item.id !== taskId);
+        this.setData({ 
+          isGenerating: false,
+          galleryItems: filteredItems
+        });
+        
+        wx.showModal({
+          title: '生成超时',
+          content: '您的作品仍在后台努力绘制中，您可以稍后下拉刷新历史画库。',
+          showCancel: false,
+          confirmColor: '#a13a00'
+        });
+        this.fetchUserProfile();
+        return;
+      }
+      
+      request({
+        url: `/image/status/${taskId}`,
+        method: 'GET'
+      }).then(statusRes => {
+        if (statusRes.status === 'success') {
+          clearInterval(this.generationPollTimer);
+          this.generationPollTimer = null;
+          
+          const latestImg = statusRes.image_url;
+          const shouldKeepRefining = isRefineValid && nextIterations > 0 && Date.now() < nextExpireTime;
+          
+          if (!shouldKeepRefining) {
+            if (this.refineTimer) {
+              clearInterval(this.refineTimer);
+              this.refineTimer = null;
+            }
+          }
+          
+          // 就地局部更新画廊，避免暴力全量刷新引起的严重抖动与白屏
+          const updatedItems = this.data.galleryItems.map(item => {
+            if (item.id === taskId) {
+              return Object.assign({}, item, {
+                status: 'success',
+                img: latestImg
+              });
+            }
+            return item;
+          });
+          
+          this.setData({
+            isGenerating: false,
+            promptText: shouldKeepRefining ? prompt : '',
+            charCount: shouldKeepRefining ? prompt.length : 0,
+            refImgUrl: shouldKeepRefining ? latestImg : '',
+            refineParentId: shouldKeepRefining ? taskId : null,
+            isRefining: shouldKeepRefining,
+            galleryItems: updatedItems
+          });
+
+          // 拉取最新个人资料以对账灵感值
+          this.fetchUserProfile();
+          
+          let modalContent = isRefineValid 
+            ? `您的AI艺术品微调迭代成功！本次不消耗灵感值，当前模式剩余免费迭代额度：${nextIterations}次。`
+            : `您的AI艺术品已生成成功，并已呈现于您的个人画库中！当前模式享有免费迭代额度：${nextIterations}次（10分钟内有效）。`;
+            
+          wx.showModal({
+            title: isRefineValid ? '迭代成功' : '生成成功',
+            content: modalContent,
+            confirmText: '留在画库',
+            cancelText: '回到首页',
+            confirmColor: '#a13a00',
+            success: (res) => {
+              if (res.cancel) {
+                this.setData({
+                  activeTab: 'home'
+                });
+              }
+            }
+          });
+        } else if (statusRes.status === 'failed') {
+          clearInterval(this.generationPollTimer);
+          this.generationPollTimer = null;
+          
+          // 物理移除失败的卡片数据
+          const filteredItems = this.data.galleryItems.filter(item => item.id !== taskId);
+          this.setData({ 
+            isGenerating: false,
+            galleryItems: filteredItems
+          });
+          
+          wx.showModal({
+            title: '生成失败',
+            content: statusRes.error || 'AI 画师绘制失败，已自动退回并安全回滚扣减的灵感值。',
+            showCancel: false,
+            confirmColor: '#a13a00'
+          });
+          this.fetchUserProfile();
+        }
+      }).catch(err => {
+        console.error('轮询状态接口异常: ', err);
+      });
+    }, 2000);
   },
 
   // ========================================================
