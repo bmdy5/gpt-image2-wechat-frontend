@@ -62,7 +62,21 @@ Page({
       { points: 10, price: '9.9' },
       { points: 50, price: '39.9', originalPrice: '49.5', isPopular: true },
       { points: 100, price: '69.9' }
-    ]
+    ],
+
+    // ==========================================
+    // INTERACTION STATES (Phase 2 Additions)
+    // ==========================================
+    previewVisible: false,
+    previewImgUrl: '',
+    previewItemId: null,
+    previewItemIsLiked: false,
+    likedItems: {}, // Store user like status: { [itemId]: boolean }
+    
+    deleteConfirmVisible: false,
+    deletingItemId: null,
+
+    taskCollapsed: false
   },
 
   // Page local constants
@@ -217,10 +231,31 @@ Page({
   },
 
   // ========================================================
-  // PORTED PAGE 2: 画廊 (History Gallery) LOGIC
+  // PORTED PAGE 2: 画廊 (History Gallery) LOGIC (REWRITTEN FOR CONFIRM)
   // ========================================================
   deleteGalleryItem(e) {
     const itemId = parseInt(e.currentTarget.dataset.id, 10);
+    this.setData({
+      deleteConfirmVisible: true,
+      deletingItemId: itemId
+    });
+  },
+
+  cancelDeleteGalleryItem() {
+    this.setData({
+      deleteConfirmVisible: false,
+      deletingItemId: null
+    });
+  },
+
+  confirmDeleteGalleryItem() {
+    const itemId = this.data.deletingItemId;
+    if (!itemId) return;
+
+    this.setData({
+      deleteConfirmVisible: false
+    });
+
     const items = this.data.galleryItems;
     
     // 1. Locate and trigger fade-out transition state
@@ -238,8 +273,15 @@ Page({
     // 2. Filter out element from DOM after transition timeout (400ms)
     setTimeout(() => {
       const filtered = this.data.galleryItems.filter(item => item.id !== itemId);
+      
+      // Clean up liked status if present
+      const liked = Object.assign({}, this.data.likedItems);
+      delete liked[itemId];
+
       this.setData({
-        galleryItems: filtered
+        galleryItems: filtered,
+        likedItems: liked,
+        deletingItemId: null
       });
 
       wx.showToast({
@@ -248,6 +290,103 @@ Page({
         duration: 1500
       });
     }, 400);
+  },
+
+  // ========================================================
+  // GALLERY IMAGE FULLSCREEN PREVIEW & COCKPIT CONTROLS
+  // ========================================================
+  openPreview(e) {
+    const imgUrl = e.currentTarget.dataset.img;
+    const itemId = parseInt(e.currentTarget.dataset.id, 10);
+    const isLiked = !!this.data.likedItems[itemId];
+
+    this.setData({
+      previewVisible: true,
+      previewImgUrl: imgUrl,
+      previewItemId: itemId,
+      previewItemIsLiked: isLiked
+    });
+  },
+
+  closePreview() {
+    this.setData({
+      previewVisible: false,
+      previewImgUrl: '',
+      previewItemId: null,
+      previewItemIsLiked: false
+    });
+  },
+
+  toggleLike() {
+    const itemId = this.data.previewItemId;
+    if (!itemId) return;
+
+    const currentLiked = !this.data.previewItemIsLiked;
+    const liked = Object.assign({}, this.data.likedItems);
+    liked[itemId] = currentLiked;
+
+    this.setData({
+      previewItemIsLiked: currentLiked,
+      likedItems: liked
+    });
+
+    wx.showToast({
+      title: currentLiked ? '已成功收藏作品' : '已取消收藏作品',
+      icon: 'none',
+      duration: 1500
+    });
+  },
+
+  saveToAlbum() {
+    const imgUrl = this.data.previewImgUrl;
+    if (!imgUrl) return;
+
+    wx.showLoading({
+      title: '正在保存到相册...',
+      mask: true
+    });
+
+    // Simulate standard mini program photos album authorization & write cycle
+    setTimeout(() => {
+      wx.hideLoading();
+      wx.showToast({
+        title: '作品已成功保存到相册',
+        icon: 'success',
+        duration: 2000
+      });
+    }, 1500);
+  },
+
+  shareImage() {
+    const imgUrl = this.data.previewImgUrl;
+    if (!imgUrl) return;
+
+    wx.showActionSheet({
+      itemList: ['分享给微信好友', '分享到朋友圈', '生成精美海报'],
+      itemColor: '#a13a00',
+      success: (res) => {
+        const actions = ['微信好友', '朋友圈', '精美海报'];
+        wx.showToast({
+          title: `已发起分享到${actions[res.tapIndex]}`,
+          icon: 'none',
+          duration: 1500
+        });
+      }
+    });
+  },
+
+  // Gesture handling placeholders to absorb touch movements during full screen preview
+  onPreviewTouchStart() {},
+  onPreviewTouchMove() {},
+  onPreviewTouchEnd() {},
+
+  // ========================================================
+  // RECHARGE COLLAPSIBLE ACCORDION
+  // ========================================================
+  toggleTaskCollapse() {
+    this.setData({
+      taskCollapsed: !this.data.taskCollapsed
+    });
   },
 
   goToGenerate() {
@@ -508,12 +647,8 @@ Page({
 
       if (!ctx) return;
 
-      if (mode === 'advanced' || mode === 'flagship') {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
-        ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-      } else {
-        ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-      }
+      // 必须无条件使用 clearRect 彻底擦除画布，以保障在小程序原生同层渲染架构下 Canvas 始终保持 100% 物理透明，绝对防范对底层 DOM 元素的像素级遮挡
+      ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
       if (this.touchActive) {
         this.avoidRadius += (140 - this.avoidRadius) * 0.15; 

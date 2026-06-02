@@ -108,7 +108,7 @@
               class="waterfall-item {{item.isFading ? 'fade-out' : ''}}"
             >
               <view class="waterfall-card border-hairline">
-                <image class="card-img" src="{{item.img}}" mode="widthFix"></image>
+                <image class="card-img" src="{{item.img}}" mode="widthFix" bindtap="openPreview" data-img="{{item.img}}" data-id="{{item.id}}"></image>
                 
                 <!-- Floating Action Overlays -->
                 <view class="card-actions-overlay">
@@ -181,17 +181,18 @@
         </view>
 
         <!-- Promotion Banner -->
-        <view class="promo-banner border-hairline">
+        <!-- Promotion Banner -->
+        <view class="promo-banner border-hairline" bindtap="toggleTaskCollapse">
           <view class="promo-left">
             <view class="check-icon-circle">✓</view>
             <text class="promo-text">赚取更多灵感值</text>
           </view>
           <!-- Image SVG: chevron-right -->
-          <view class="chevron-right icon-chevron"></view>
+          <view class="chevron-right icon-chevron {{taskCollapsed ? 'rotate-90' : ''}}"></view>
         </view>
 
         <!-- Task Item: Watch Video -->
-        <view class="video-task-card border-hairline mt-6" bindtap="watchVideoPoints">
+        <view class="video-task-card border-hairline mt-3 {{taskCollapsed ? 'collapsed' : ''}}" bindtap="{{taskCollapsed ? '' : 'watchVideoPoints'}}">
           <view class="video-task-left">
             <!-- Image SVG: play-icon -->
             <view class="play-icon icon-play"></view>
@@ -380,6 +381,58 @@
           </view>
           <text class="style-name">二次元</text>
         </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- High-Fidelity Gallery Detail Image Preview Overlay (沉浸式大图模态层) -->
+  <view class="preview-overlay {{previewVisible ? 'active' : ''}}" bindtap="closePreview">
+    <view class="preview-container" catchtap="stopBubble">
+      <image 
+        class="preview-image" 
+        src="{{previewImgUrl}}" 
+        mode="aspectFit" 
+        bindtouchstart="onPreviewTouchStart" 
+        bindtouchmove="onPreviewTouchMove" 
+        bindtouchend="onPreviewTouchEnd"
+      ></image>
+      
+      <!-- Glassmorphism Floating Cockpit Panel (浮动磨砂控制舱) -->
+      <view class="preview-cockpit">
+        <!-- Save Button -->
+        <view class="preview-btn btn-save" hover-class="btn-hover" bindtap="saveToAlbum">
+          <view class="icon-btn-svg icon-download"></view>
+          <text class="btn-label">保存</text>
+        </view>
+        
+        <view class="divider-v-cockpit"></view>
+
+        <!-- Like Button -->
+        <view class="preview-btn btn-like {{previewItemIsLiked ? 'liked' : ''}}" hover-class="btn-hover" bindtap="toggleLike">
+          <view class="icon-btn-svg icon-heart"></view>
+          <text class="btn-label">收藏</text>
+        </view>
+
+        <view class="divider-v-cockpit"></view>
+
+        <!-- Share Button -->
+        <view class="preview-btn btn-share" hover-class="btn-hover" bindtap="shareImage">
+          <view class="icon-btn-svg icon-share"></view>
+          <text class="btn-label">分享</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Double Confirmation Acrylic Modal (二次确认磨砂弹窗) -->
+  <view class="confirm-modal-overlay {{deleteConfirmVisible ? 'active' : ''}}" bindtap="cancelDeleteGalleryItem">
+    <view class="confirm-modal-content" catchtap="stopBubble">
+      <view class="icon-warning confirm-modal-icon"></view>
+      <text class="confirm-modal-title">永久删除该作品？</text>
+      <text class="confirm-modal-desc">此操作不可恢复，您的AI画作将被永久从云端画库中移除。</text>
+      <view class="confirm-modal-actions">
+        <view class="confirm-btn btn-cancel" hover-class="btn-hover" bindtap="cancelDeleteGalleryItem">取消</view>
+        <view class="confirm-btn btn-confirm" hover-class="btn-hover" bindtap="confirmDeleteGalleryItem">删除</view>
       </view>
     </view>
   </view>
