@@ -177,7 +177,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius-xl);
-  padding: 10px 18px;
+  padding: 10px 12px;
   margin-top: 20px;
   position: relative;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
@@ -187,9 +187,9 @@
 .mode-dropdown-trigger {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   color: var(--on-surface-variant);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.2px;
   transition: color 0.2s;
@@ -224,9 +224,9 @@
 .style-trigger, .enhance-trigger {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   color: var(--on-surface-variant);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.2px;
   transition: all 0.2s;
@@ -706,6 +706,22 @@
 
 .go-watch-btn:active {
   transform: scale(0.95);
+}
+
+.recharge-collapsible-wrapper {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  overflow: hidden;
+  max-height: 800px;
+  opacity: 1;
+}
+
+.recharge-collapsible-wrapper.collapsed {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  pointer-events: none;
 }
 
 /* Recharge Tiers List */
@@ -1710,4 +1726,162 @@
   background-size: contain;
   background-repeat: no-repeat;
   display: block;
+}
+
+/* ========================================================
+   5. UPLOAD REFERENCE IMAGE SYSTEM (PHASE 3)
+   ======================================================== */
+.ref-upload-container {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Glassmorphism Upload Reference Button */
+.upload-reference-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 6px 12px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 0.5px solid rgba(223, 192, 181, 0.4);
+}
+
+.upload-reference-btn:active {
+  transform: scale(0.95);
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.upload-btn-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--on-surface-variant);
+  letter-spacing: 0.2px;
+}
+
+/* Image Upload Icons (Pure CSS) */
+.icon-image-add {
+  width: 14px;
+  height: 12px;
+  border: 1.5px solid var(--on-surface-variant);
+  border-radius: 2px;
+  position: relative;
+}
+
+.icon-image-add::before {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background-color: var(--on-surface-variant);
+  top: 2px;
+  left: 2px;
+}
+
+.icon-image-add::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid var(--on-surface-variant);
+  bottom: 0;
+  left: 1px;
+}
+
+/* Preview Thumbnail Wrap */
+.ref-preview-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1.5px solid #ffffff;
+  overflow: visible;
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.ref-preview-thumbnail {
+  width: 100%;
+  height: 100%;
+  border-radius: 8.5px;
+  display: block;
+}
+
+/* Miniature Delete Button (Close) */
+.ref-delete-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: rgba(27, 27, 29, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  z-index: 12;
+}
+
+.ref-delete-btn:active {
+  transform: scale(0.85);
+  background-color: #000000;
+}
+
+.icon-close-small {
+  position: relative;
+  width: 8px;
+  height: 8px;
+}
+
+.icon-close-small::before,
+.icon-close-small::after {
+  content: '';
+  position: absolute;
+  top: 3.5px;
+  left: 0;
+  width: 8px;
+  height: 1px;
+  background-color: #ffffff;
+}
+
+.icon-close-small::before {
+  transform: rotate(45deg);
+}
+
+.icon-close-small::after {
+  transform: rotate(-45deg);
+}
+
+/* ========================================================
+   6. CUSTOM PAGE SPACING FIXES (PHASE 3)
+   ======================================================== */
+.recharge-view {
+  padding-top: 24px !important;
 }

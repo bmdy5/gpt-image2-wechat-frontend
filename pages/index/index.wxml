@@ -21,7 +21,7 @@
   </view>
 
   <!-- Main ScrollView -->
-  <scroll-view class="main-content" scroll-y style="padding-top: {{customHeaderHeight}}px; padding-bottom: {{activeTab === 'home' ? (120 + safeAreaBottom) : (90 + safeAreaBottom)}}px;">
+  <scroll-view class="main-content" scroll-y style="padding-top: {{customHeaderHeight}}px; padding-bottom: {{mainContentPaddingBottom}}px;">
     
     <!-- ============================================================
          TAB 1: 首页 (Home - Prompt Generator)
@@ -39,6 +39,24 @@
             disabled="{{isGenerating}}"
             bindinput="onPromptInput"
           />
+          
+          <!-- Upload Reference Image Component -->
+          <view class="ref-upload-container">
+            <block wx:if="{{refImgUrl}}">
+              <view class="ref-preview-wrap">
+                <image class="ref-preview-thumbnail" src="{{refImgUrl}}" mode="aspectFill"></image>
+                <view class="ref-delete-btn" catchtap="deleteReferenceImage">
+                  <view class="icon-close-small"></view>
+                </view>
+              </view>
+            </block>
+            <block wx:else>
+              <view class="upload-reference-btn border-hairline" hover-class="btn-hover" bindtap="chooseReferenceImage">
+                <view class="icon-image-add"></view>
+                <text class="upload-btn-text">参考图</text>
+              </view>
+            </block>
+          </view>
         </view>
 
         <!-- Custom Capsule Utility Bar -->
@@ -63,7 +81,7 @@
           <!-- AI Enhance Prompt Toggle -->
           <view class="enhance-trigger {{isEnhancing ? 'active' : ''}}" hover-class="btn-hover" bindtap="toggleEnhance">
             <view class="icon-auto-fix-high"></view>
-            <text class="bar-btn-text">润色提示词</text>
+            <text class="bar-btn-text">AI润色</text>
           </view>
 
           <!-- Character limits tracker -->
@@ -204,49 +222,57 @@
           <text class="go-watch-btn">去观看</text>
         </view>
 
-        <!-- Pricing Tiers Grid -->
-        <view class="pricing-section-title mt-6">
-          <text class="section-label">选择充值额度</text>
-          <!-- Image SVG: arrow-up-icon -->
-          <view class="arrow-up-icon icon-arrow-up"></view>
-        </view>
-
-        <view class="pricing-list">
-          <view 
-            wx:for="{{rechargeTiers}}" 
-            wx:key="points" 
-            class="price-tier-card border-hairline {{selectedTierIndex === index ? 'selected' : ''}}"
-            bindtap="selectRechargeTier"
-            data-index="{{index}}"
-          >
-            <view class="tier-left">
-              <text class="tier-points">{{item.points}} <text class="unit-text">点</text></text>
-              <text wx:if="{{item.isPopular}}" class="popular-badge">MOST POPULAR</text>
+        <!-- Collapsible Recharge Section (Feature Toggle 物理隐藏控制) -->
+        <block wx:if="{{showRechargeSection}}">
+          <!-- Pricing Tiers Accordion Card -->
+          <view class="promo-banner border-hairline mt-3" bindtap="toggleRechargeCollapse">
+            <view class="promo-left">
+              <view class="check-icon-circle" style="background-color: var(--primary);">¥</view>
+              <text class="promo-text ml-2">选择充值额度</text>
             </view>
-            <view class="tier-right">
-              <text wx:if="{{item.originalPrice}}" class="original-price">¥{{item.originalPrice}}</text>
-              <text class="tier-price">¥{{item.price}}</text>
-            </view>
+            <view class="chevron-right icon-chevron {{rechargeCollapsed ? 'rotate-90' : ''}}"></view>
           </view>
 
-          <!-- Custom Input Row -->
-          <view class="price-tier-card border-hairline custom-row {{selectedTierIndex === -1 ? 'selected' : ''}}">
-            <text class="custom-label">自定义</text>
-            <input 
-              class="custom-points-input"
-              type="number"
-              placeholder="输入充值金额" 
-              placeholder-class="custom-placeholder"
-              value="{{customRechargeVal}}"
-              bindinput="onCustomRechargeInput"
-            />
-            <text class="custom-unit">点</text>
-          </view>
-        </view>
+          <!-- Collapsible Content Wrapper -->
+          <view class="recharge-collapsible-wrapper {{rechargeCollapsed ? 'collapsed' : ''}}">
+            <view class="pricing-list mt-3">
+              <view 
+                wx:for="{{rechargeTiers}}" 
+                wx:key="points" 
+                class="price-tier-card border-hairline {{selectedTierIndex === index ? 'selected' : ''}}"
+                bindtap="selectRechargeTier"
+                data-index="{{index}}"
+              >
+                <view class="tier-left">
+                  <text class="tier-points">{{item.points}} <text class="unit-text">点</text></text>
+                  <text wx:if="{{item.isPopular}}" class="popular-badge">MOST POPULAR</text>
+                </view>
+                <view class="tier-right">
+                  <text wx:if="{{item.originalPrice}}" class="original-price">¥{{item.originalPrice}}</text>
+                  <text class="tier-price">¥{{item.price}}</text>
+                </view>
+              </view>
 
-        <!-- Submit Button -->
-        <button class="recharge-btn mt-6" bindtap="submitRecharge">立即充值</button>
-        <text class="recharge-footer">充值即代表同意服务协议</text>
+              <!-- Custom Input Row -->
+              <view class="price-tier-card border-hairline custom-row {{selectedTierIndex === -1 ? 'selected' : ''}}">
+                <text class="custom-label">自定义</text>
+                <input 
+                  class="custom-points-input"
+                  type="number"
+                  placeholder="输入充值金额" 
+                  placeholder-class="custom-placeholder"
+                  value="{{customRechargeVal}}"
+                  bindinput="onCustomRechargeInput"
+                />
+                <text class="custom-unit">点</text>
+              </view>
+            </view>
+
+            <!-- Submit Button -->
+            <button class="recharge-btn mt-6" bindtap="submitRecharge">立即充值</button>
+            <text class="recharge-footer">充值即代表同意服务协议</text>
+          </view>
+        </block>
       </view>
     </block>
 
@@ -385,9 +411,8 @@
     </view>
   </view>
 
-  <!-- High-Fidelity Gallery Detail Image Preview Overlay (沉浸式大图模态层) -->
   <view class="preview-overlay {{previewVisible ? 'active' : ''}}" bindtap="closePreview">
-    <view class="preview-container" catchtap="stopBubble">
+    <view class="preview-container">
       <image 
         class="preview-image" 
         src="{{previewImgUrl}}" 
@@ -398,7 +423,7 @@
       ></image>
       
       <!-- Glassmorphism Floating Cockpit Panel (浮动磨砂控制舱) -->
-      <view class="preview-cockpit">
+      <view class="preview-cockpit" catchtap="stopBubble">
         <!-- Save Button -->
         <view class="preview-btn btn-save" hover-class="btn-hover" bindtap="saveToAlbum">
           <view class="icon-btn-svg icon-download"></view>

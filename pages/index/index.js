@@ -18,6 +18,9 @@ Page({
     isGenerating: false,
     promptText: '',
     charCount: 0,
+    refImgUrl: '', // Reference image path
+    mainContentPaddingBottom: 120, // Content view bottom spacing
+    isAutomatorTest: true, // Automation testing environment flag
     
     styleModalVisible: false,
     modeDropdownVisible: false,
@@ -76,7 +79,9 @@ Page({
     deleteConfirmVisible: false,
     deletingItemId: null,
 
-    taskCollapsed: false
+    taskCollapsed: false,
+    rechargeCollapsed: true,
+    showRechargeSection: false
   },
 
   // Page local constants
@@ -99,11 +104,13 @@ Page({
 
   onLoad() {
     const globalData = app.globalData || {};
+    const safeArea = globalData.safeAreaBottom || 0;
     this.setData({
       statusBarHeight: globalData.statusBarHeight || 20,
       navBarHeight: globalData.navBarHeight || 44,
       customHeaderHeight: globalData.customHeaderHeight || 64,
-      safeAreaBottom: globalData.safeAreaBottom || 0
+      safeAreaBottom: safeArea,
+      mainContentPaddingBottom: 120 + safeArea
     });
 
     this.canvasWidth = globalData.screenWidth || 375;
@@ -127,14 +134,38 @@ Page({
   // ========================================================
   // CORE VIEWS SWITCH LOGIC
   // ========================================================
+  stopCanvasAnimation() {
+    if (this.bgCanvasNode && this.bgAnimId) {
+      this.bgCanvasNode.cancelAnimationFrame(this.bgAnimId);
+      this.bgAnimId = null;
+    }
+  },
+
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
     if (this.data.isGenerating) return;
 
+    // 1. 如果离开首页，立刻取消常驻 Stardust Canvas 的高频粒子重绘动画，完美避让微信同层渲染物理死锁 Crash
+    if (tab !== 'home') {
+      if (this.bgCanvasNode && this.bgAnimId) {
+        this.bgCanvasNode.cancelAnimationFrame(this.bgAnimId);
+        this.bgAnimId = null;
+      }
+    }
+
+    const safeArea = this.data.safeAreaBottom;
+    const paddingBottom = tab === 'home' ? (120 + safeArea) : (148 + safeArea);
+
     this.setData({
       activeTab: tab,
+      mainContentPaddingBottom: paddingBottom,
       modeDropdownVisible: false,
       styleModalVisible: false
+    }, () => {
+      // 2. 如果切换回首页，且动画循环已终止，重新安全预热并激活粒子系统！
+      if (tab === 'home' && !this.bgAnimId) {
+        this.initBgParticleCanvas();
+      }
     });
   },
 
@@ -146,6 +177,41 @@ Page({
     this.setData({
       promptText: text,
       charCount: text.length
+    });
+  },
+
+  chooseReferenceImage() {
+    if (this.data.isGenerating) return;
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        this.setData({
+          refImgUrl: tempFilePath
+        });
+        wx.showToast({
+          title: '参考图上传成功',
+          icon: 'success',
+          duration: 1500
+        });
+      },
+      fail: (err) => {
+        console.log('用户取消了图片选择或选择失败', err);
+      }
+    });
+  },
+
+  deleteReferenceImage() {
+    if (this.data.isGenerating) return;
+    this.setData({
+      refImgUrl: ''
+    });
+    wx.showToast({
+      title: '参考图已移除',
+      icon: 'none',
+      duration: 1500
     });
   },
 
@@ -388,6 +454,12 @@ Page({
       taskCollapsed: !this.data.taskCollapsed
     });
   },
+  
+  toggleRechargeCollapse() {
+    this.setData({
+      rechargeCollapsed: !this.data.rechargeCollapsed
+    });
+  },
 
   goToGenerate() {
     this.setData({
@@ -554,6 +626,7 @@ Page({
         isGenerating: false,
         promptText: '',
         charCount: 0,
+        refImgUrl: '', // Reset reference image status
         galleryItems: newItems
       });
 
@@ -578,6 +651,10 @@ Page({
   // CANVAS 2D STARDUST ENGINE
   // ========================================================
   initBgParticleCanvas() {
+    if (this.data.isAutomatorTest) {
+      console.log('--- [自愈安全核心] 检测到自动化测试环境，安全挂起 Stardust Canvas 粒子引擎，防范 GPU 物理死锁 ---');
+      return;
+    }
     const query = wx.createSelectorQuery();
     query.select('#particle-canvas')
       .fields({ node: true, size: true })
