@@ -42,6 +42,12 @@
           
           <!-- Upload Reference Image Component -->
           <view class="ref-upload-container">
+            <!-- AI Enhance Toggle Button (并列排在参考图左边) -->
+            <view class="enhance-reference-btn border-hairline {{isEnhancing ? 'active' : ''}}" hover-class="btn-hover" catchtap="toggleEnhance">
+              <view class="icon-auto-fix-high {{isEnhancing ? 'active' : ''}}"></view>
+              <text class="enhance-btn-text">AI润色</text>
+            </view>
+
             <block wx:if="{{refImgUrl}}">
               <view class="ref-preview-wrap">
                 <image class="ref-preview-thumbnail" src="{{refImgUrl}}" mode="aspectFill"></image>
@@ -75,14 +81,6 @@
             <view class="icon-style"></view>
             <text class="bar-btn-text">风格选择</text>
           </view>
-          
-          <view class="divider-v"></view>
-
-          <!-- AI Enhance Prompt Toggle -->
-          <view class="enhance-trigger {{isEnhancing ? 'active' : ''}}" hover-class="btn-hover" bindtap="toggleEnhance">
-            <view class="icon-auto-fix-high"></view>
-            <text class="bar-btn-text">AI润色</text>
-          </view>
 
           <!-- Character limits tracker -->
           <view class="char-counter">
@@ -99,9 +97,9 @@
 
         <!-- Quick Chips Tags -->
         <scroll-view class="suggestions-row" scroll-x enable-flex>
-          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="超 surrealism 梦幻风景，悬浮水晶群岛，淡粉霓虹瀑布，柔和光晕效果">超现实主义风景</view>
-          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="现代极简主义客厅，大片白沙水泥墙，温暖树影光斑掠过，自然原木饰面">极简主义设计</view>
-          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="复古未来主义都市，赛博霓虹粉蓝街道，飞空艇，复古像素颗粒质感">复古未来主义</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="一只精致的白瓷茶杯，里面旋转着璀璨的微缩星系与星云，闪烁的星辰，微距摄影，梦幻荧光，极细腻材质纹理">茶杯里的微观星系</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="一座深邃静谧的森林图书馆，书本如树木般从木质地板中拔地而起，书页幻化为翩翩飞舞的金色飞蛾，柔和金色丁达尔光晕">森林图书馆与飞蛾</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="一座巨大的混凝土废土巨石遗迹，被发光且缓缓脉动的巨型深海珊瑚与藤蔓吞噬重夺，丁达尔神秘侧光，超精细废土美学">发光珊瑚与废土遗迹</view>
         </scroll-view>
       </view>
     </block>
@@ -169,23 +167,10 @@
          ============================================================ -->
     <block wx:if="{{activeTab === 'inspiration'}}">
       <view class="recharge-view">
-        <!-- Sub-Tabs Selector -->
-        <view class="recharge-tabs">
-          <view 
-            class="recharge-tab-item {{rechargeSubTab === 'ios' ? 'active' : ''}}" 
-            bindtap="switchRechargeSubTab" 
-            data-subtab="ios"
-          >IOS</view>
-          <view 
-            class="recharge-tab-item {{rechargeSubTab === 'web' ? 'active' : ''}}" 
-            bindtap="switchRechargeSubTab" 
-            data-subtab="web"
-          >WEB / ANDROID</view>
-        </view>
 
         <!-- Main Title -->
         <view class="recharge-header mt-6">
-          <text class="recharge-title">充值中心</text>
+          <text class="recharge-title">灵感中心</text>
           <text class="recharge-subtitle">解锁更多 AI 创作力</text>
         </view>
 
@@ -501,39 +486,43 @@
               </button>
             </view>
 
-            <!-- 任务项 1：观看视频领灵感值 -->
-            <view class="task-row-card border-hairline mt-3" bindtap="watchVideoPoints">
-              <view class="task-row-left">
-                <view class="task-circle-icon play-theme">
-                  <view class="play-svg-arrow">▶</view>
+            <!-- 任务项 1：邀请好友助力裂变 (利用 open-type="share" 原生拉起) -->
+            <button class="task-row-button-reset mt-3" open-type="share" data-sharetype="invite">
+              <view class="task-row-card border-hairline">
+                <view class="task-row-left">
+                  <view class="task-circle-icon share-theme" style="background-color: rgba(9, 109, 217, 0.06);">
+                    <view class="share-svg-net" style="color: rgba(9, 109, 217, 0.95);">❖</view>
+                  </view>
+                  <view class="task-row-meta">
+                    <text class="task-row-title">邀请微信好友助力</text>
+                    <text class="task-row-desc">每邀请一位新用户进入，奖励均分下发</text>
+                  </view>
                 </view>
-                <view class="task-row-meta">
-                  <text class="task-row-title">观看视频领灵感值</text>
-                  <text class="task-row-desc">每次完整观看广告视频可赠送</text>
+                <view class="task-row-reward">
+                  <text class="reward-val">+5</text>
+                  <text class="reward-unit">点</text>
                 </view>
               </view>
-              <view class="task-row-reward">
-                <text class="reward-val">+5</text>
-                <text class="reward-unit">点</text>
-              </view>
-            </view>
+            </button>
 
-            <!-- 任务项 2：每日社交分享裂变 -->
-            <view class="task-row-card border-hairline mt-3" bindtap="shareToFriends">
-              <view class="task-row-left">
-                <view class="task-circle-icon share-theme">
-                  <view class="share-svg-net">❖</view>
+            <!-- 任务项 2：日常杰作分享 -->
+            <button class="task-row-button-reset mt-3" open-type="share" data-sharetype="work">
+              <view class="task-row-card border-hairline">
+                <view class="task-row-left">
+                  <view class="task-circle-icon play-theme" style="background-color: rgba(161, 58, 0, 0.06);">
+                    <view class="play-svg-arrow" style="color: var(--primary);">▶</view>
+                  </view>
+                  <view class="task-row-meta">
+                    <text class="task-row-title">分享杰作给好友</text>
+                    <text class="task-row-desc">每日首次将数字艺术画推送至微信群聊</text>
+                  </view>
                 </view>
-                <view class="task-row-meta">
-                  <text class="task-row-title">分享杰作给好友</text>
-                  <text class="task-row-desc">每日首次将画作推至好友或群聊</text>
+                <view class="task-row-reward">
+                  <text class="reward-val">+3</text>
+                  <text class="reward-unit">点</text>
                 </view>
               </view>
-              <view class="task-row-reward">
-                <text class="reward-val">+3</text>
-                <text class="reward-unit">点</text>
-              </view>
-            </view>
+            </button>
           </view>
         </block>
 

@@ -592,13 +592,6 @@ Page({
   // ========================================================
   // PORTED PAGE 3: 充值中心 (Recharge) LOGIC
   // ========================================================
-  switchRechargeSubTab(e) {
-    const subTab = e.currentTarget.dataset.subtab;
-    this.setData({
-      rechargeSubTab: subTab
-    });
-  },
-
   selectRechargeTier(e) {
     const index = parseInt(e.currentTarget.dataset.index, 10);
     this.setData({
