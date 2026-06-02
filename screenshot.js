@@ -19,7 +19,7 @@ async function run() {
 
     console.log('正在等待页面加载...');
     const activePage = await miniProgram.reLaunch('/pages/index/index');
-    await activePage.waitFor(2000); // 确保页面稳定
+    await activePage.waitFor(4500); // 拓宽冷启动安全就绪期，避开 CPU 渲染峰值抖动
 
     // =========================================================================
     // 🚉 黄金单向列车第一站：HOME TAB (首页相关的所有 6 个状态在此原地一次性完成)
@@ -30,7 +30,7 @@ async function run() {
     const homePath = path.join(__dirname, 'test_screen_home.png');
     console.log('正在生成截图：test_screen_home.png');
     await miniProgram.screenshot({ path: homePath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
+    await activePage.waitFor(3000); // 拓宽 GPU 物理排空冷却时间，保障显存彻底回收
 
     // 2. 上传参考图状态
     console.log('正在注入纯本地解码的 Base64 参考图数据...');
@@ -170,7 +170,54 @@ async function run() {
     await miniProgram.screenshot({ path: profilePath });
     await activePage.waitFor(2000); // GPU 截图后排空冷却
 
-    console.log('\n所有 11 张物理回归截图完美且安全生成，准备断开连接...');
+    // 12. 我的收藏抽屉态
+    console.log('正在注入状态以展示【我的收藏】抽屉...');
+    await activePage.setData({
+      drawerVisible: true,
+      drawerType: 'favorites',
+      drawerTitle: '我的收藏'
+    });
+    await activePage.waitFor(1500); // 等待抽屉滑入动画稳定
+    const favPath = path.join(__dirname, 'test_screen_profile_favorites.png');
+    console.log('正在生成截图：test_screen_profile_favorites.png');
+    await miniProgram.screenshot({ path: favPath });
+    await activePage.waitFor(2000);
+
+    // 13. 任务中心抽屉态
+    console.log('正在注入状态以展示【任务中心】抽屉...');
+    await activePage.setData({
+      drawerVisible: true,
+      drawerType: 'tasks',
+      drawerTitle: '任务中心'
+    });
+    await activePage.waitFor(1500); // 等待抽屉滑入动画稳定
+    const tasksPath = path.join(__dirname, 'test_screen_profile_tasks.png');
+    console.log('正在生成截图：test_screen_profile_tasks.png');
+    await miniProgram.screenshot({ path: tasksPath });
+    await activePage.waitFor(2000);
+
+    // 14. 系统设置抽屉态
+    console.log('正在注入状态以展示【系统设置】抽屉...');
+    await activePage.setData({
+      drawerVisible: true,
+      drawerType: 'settings',
+      drawerTitle: '系统设置'
+    });
+    await activePage.waitFor(1500); // 等待抽屉滑入动画稳定
+    const settingsPath = path.join(__dirname, 'test_screen_profile_settings.png');
+    console.log('正在生成截图：test_screen_profile_settings.png');
+    await miniProgram.screenshot({ path: settingsPath });
+    await activePage.waitFor(2000);
+
+    // 还原抽屉状态，回归干净基线
+    await activePage.setData({
+      drawerVisible: false,
+      drawerType: '',
+      drawerTitle: ''
+    });
+    await activePage.waitFor(800);
+
+    console.log('\n所有高保真物理回归截图完美且安全生成，准备断开连接...');
     await miniProgram.close();
     console.log('微信开发者工具连接已安全关闭。自动化流程结束！');
   } catch (error) {

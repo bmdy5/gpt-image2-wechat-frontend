@@ -310,15 +310,15 @@
 
         <!-- Profile Settings Rows -->
         <view class="settings-list mt-6">
-          <view class="settings-row border-hairline">
+          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="favorites" data-title="我的收藏">
             <text class="settings-label">我的收藏</text>
             <view class="icon-chevron"></view>
           </view>
-          <view class="settings-row border-hairline">
+          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="tasks" data-title="任务中心">
             <text class="settings-label">任务中心</text>
             <view class="icon-chevron"></view>
           </view>
-          <view class="settings-row border-hairline">
+          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="settings" data-title="系统设置">
             <text class="settings-label">系统设置</text>
             <view class="icon-chevron"></view>
           </view>
@@ -408,6 +408,141 @@
           <text class="style-name">二次元</text>
         </view>
       </view>
+    </view>
+  </view>
+
+  <!-- High-Fidelity Glassmorphism Bottom Sheet Drawer (通用拟物毛玻璃抽屉层) -->
+  <view class="drawer-mask {{drawerVisible ? 'active' : ''}}" bindtap="closeDrawer">
+    <view class="drawer-content {{drawerVisible ? 'active' : ''}}" catchtap="stopBubble">
+      <!-- Drag handle -->
+      <view class="drawer-handle" bindtap="closeDrawer"></view>
+      
+      <!-- Drawer Header -->
+      <view class="drawer-header">
+        <text class="drawer-title">{{drawerTitle}}</text>
+        <view class="drawer-close-btn" bindtap="closeDrawer">
+          <view class="icon-close-small"></view>
+        </view>
+      </view>
+
+      <!-- Scrollable Inner Panel -->
+      <scroll-view class="drawer-body" scroll-y>
+        
+        <!-- ============================================================
+             SUB-DRAWER 1: 我的收藏 (Favorites Content)
+             ============================================================ -->
+        <block wx:if="{{drawerType === 'favorites'}}">
+          <view class="favorites-grid" wx:if="{{hasFavorites}}">
+            <block wx:for="{{galleryItems}}" wx:key="id">
+              <view wx:if="{{likedItems[item.id]}}" class="favorite-item-card border-hairline" bindtap="openPreview" data-img="{{item.img}}" data-id="{{item.id}}">
+                <image class="favorite-thumbnail" src="{{item.img}}" mode="aspectFill"></image>
+                <view class="favorite-desc-wrap">
+                  <text class="favorite-desc-text">{{item.desc}}</text>
+                </view>
+              </view>
+            </block>
+          </view>
+          
+          <!-- Empty state placeholder -->
+          <view class="drawer-empty-state" wx:else>
+            <view class="empty-favorite-icon icon-favorite-empty">
+              <view class="empty-heart-line">♥</view>
+            </view>
+            <text class="empty-state-title">暂无收藏艺术品</text>
+            <text class="empty-state-subtitle">在历史画廊长按或双击可收藏精美作品</text>
+          </view>
+        </block>
+
+        <!-- ============================================================
+             SUB-DRAWER 2: 任务中心 (Tasks Content)
+             ============================================================ -->
+        <block wx:if="{{drawerType === 'tasks'}}">
+          <view class="tasks-container">
+            <!-- 连续签到状态面板 -->
+            <view class="daily-checkin-card border-hairline">
+              <view class="checkin-left">
+                <text class="checkin-tag">连续签到</text>
+                <text class="checkin-days-text"><text class="checkin-days-num">{{signDays}}</text> 天</text>
+              </view>
+              <button class="checkin-btn {{checkedInToday ? 'disabled' : ''}}" bindtap="{{checkedInToday ? '' : 'dailyCheckIn'}}">
+                {{checkedInToday ? '已签到' : '立即签到'}}
+              </button>
+            </view>
+
+            <!-- 任务项 1：观看视频领灵感值 -->
+            <view class="task-row-card border-hairline mt-3" bindtap="watchVideoPoints">
+              <view class="task-row-left">
+                <view class="task-circle-icon play-theme">
+                  <view class="play-svg-arrow">▶</view>
+                </view>
+                <view class="task-row-meta">
+                  <text class="task-row-title">观看视频领灵感值</text>
+                  <text class="task-row-desc">每次完整观看广告视频可赠送</text>
+                </view>
+              </view>
+              <view class="task-row-reward">
+                <text class="reward-val">+5</text>
+                <text class="reward-unit">点</text>
+              </view>
+            </view>
+
+            <!-- 任务项 2：每日社交分享裂变 -->
+            <view class="task-row-card border-hairline mt-3" bindtap="shareToFriends">
+              <view class="task-row-left">
+                <view class="task-circle-icon share-theme">
+                  <view class="share-svg-net">❖</view>
+                </view>
+                <view class="task-row-meta">
+                  <text class="task-row-title">分享杰作给好友</text>
+                  <text class="task-row-desc">每日首次将画作推至好友或群聊</text>
+                </view>
+              </view>
+              <view class="task-row-reward">
+                <text class="reward-val">+3</text>
+                <text class="reward-unit">点</text>
+              </view>
+            </view>
+          </view>
+        </block>
+
+        <!-- ============================================================
+             SUB-DRAWER 3: 系统设置 (Settings Content)
+             ============================================================ -->
+        <block wx:if="{{drawerType === 'settings'}}">
+          <view class="settings-drawer-list">
+            <!-- 动态背景特效 -->
+            <view class="settings-drawer-row border-hairline">
+              <view class="setting-row-left">
+                <text class="setting-title">Stardust 动态粒子背景</text>
+                <text class="setting-desc">关闭粒子以在旧款低性能机型上大幅降温</text>
+              </view>
+              <!-- iOS Switch Wrapper -->
+              <view class="ios-switch {{disableStardust ? '' : 'active'}}" bindtap="toggleStardustEffect">
+                <view class="ios-switch-handle"></view>
+              </view>
+            </view>
+
+            <!-- 清理本地缓存 -->
+            <view class="settings-drawer-row border-hairline" bindtap="clearAppCache">
+              <view class="setting-row-left">
+                <text class="setting-title">清理本地系统缓存</text>
+                <text class="setting-desc">释放多余的临时微缩略图缓存空间</text>
+              </view>
+              <view class="chevron-right icon-chevron"></view>
+            </view>
+
+            <!-- 隐私协议合规 -->
+            <view class="settings-drawer-row border-hairline" bindtap="showPrivacyTerms">
+              <view class="setting-row-left">
+                <text class="setting-title">用户服务协议与隐私声明</text>
+                <text class="setting-desc">符合微信合规要求的用户权益细则</text>
+              </view>
+              <view class="chevron-right icon-chevron"></view>
+            </view>
+          </view>
+        </block>
+
+      </scroll-view>
     </view>
   </view>
 
