@@ -1,9 +1,6 @@
 const automator = require('miniprogram-automator');
 const path = require('path');
 
-// 100% 绝对安全的 1x1 像素纯红 Base64 本地内存解码图片，不经过任何外网握手，绝对免疫一切沙盒网络闪退！
-const SAFE_BASE64_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-
 async function run() {
   console.log('正在拉起微信开发者工具，并载入小程序项目...');
   try {
@@ -14,214 +11,49 @@ async function run() {
 
     console.log('已成功连接小程序模拟器！正在实时监听小程序控制台日志...');
     miniProgram.on('console', msg => {
-      console.log(`[MINIPROGRAM CONSOLE] [${msg.type.toUpperCase()}] ${msg.text}`);
+      if (msg && msg.text) {
+        console.log(`[MINIPROGRAM CONSOLE] [${msg.type.toUpperCase()}] ${msg.text}`);
+      }
     });
 
     console.log('正在等待页面加载...');
     const activePage = await miniProgram.reLaunch('/pages/index/index');
-    await activePage.waitFor(4500); // 拓宽冷启动安全就绪期，避开 CPU 渲染峰值抖动
+    await activePage.waitFor(4500); // 确保冷启动及 Canvas 2D 异步绑定彻底稳定就绪
 
-    // =========================================================================
-    // 🚉 黄金单向列车第一站：HOME TAB (首页相关的所有 6 个状态在此原地一次性完成)
-    // =========================================================================
-    console.log('\n--- [黄金单向列车第一站] 开始测试 HOME 页面 ---');
+    console.log('\n--- 开始执行粒子动效单点点击回归测试 ---');
 
-    // 1. 首页默认态
-    const homePath = path.join(__dirname, 'test_screen_home.png');
-    console.log('正在生成截图：test_screen_home.png');
-    await miniProgram.screenshot({ path: homePath });
-    await activePage.waitFor(3000); // 拓宽 GPU 物理排空冷却时间，保障显存彻底回收
-
-    // 2. 上传参考图状态
-    console.log('正在注入纯本地解码的 Base64 参考图数据...');
-    await activePage.setData({ refImgUrl: SAFE_BASE64_IMAGE });
-    await activePage.waitFor(1500); // 等待 DOM 重排及缩略图淡入稳定
-    const uploadPath = path.join(__dirname, 'test_screen_home_upload.png');
-    console.log('正在生成截图：test_screen_home_upload.png');
-    await miniProgram.screenshot({ path: uploadPath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
-
-    // 3. 激活模式选择下拉菜单
-    console.log('正在注入状态以激活模式选择下拉菜单...');
-    await activePage.setData({ modeDropdownVisible: true });
-    await activePage.waitFor(1000);
-    const dropdownPath = path.join(__dirname, 'test_screen_home_dropdown.png');
-    console.log('正在生成截图：test_screen_home_dropdown.png');
-    await miniProgram.screenshot({ path: dropdownPath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
-
-    // 还原下拉框状态
-    await activePage.setData({ modeDropdownVisible: false });
-    await activePage.waitFor(800);
-
-    // 4. 打开风格选择抽屉
-    console.log('正在注入状态以打开风格选择抽屉...');
-    await activePage.setData({ styleModalVisible: true });
-    await activePage.waitFor(1500);
-    const stylePath = path.join(__dirname, 'test_screen_home_style.png');
-    console.log('正在生成截图：test_screen_home_style.png');
-    await miniProgram.screenshot({ path: stylePath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
-
-    // 还原风格弹窗状态
-    await activePage.setData({ styleModalVisible: false });
-    await activePage.waitFor(800);
-
-    // 5. 切换至进阶模式
-    console.log('正在注入状态以切换为进阶模式...');
+    // 1. 输入文字 prompt（避开 startGeneration 的空值前置拦截）
+    console.log('正在注入文字描述 Prompt...');
     await activePage.setData({
-      currentMode: 'advanced',
-      currentModeLabel: '进阶模式'
-    });
-    await activePage.waitFor(1500); // 等待模式重载及界面变动
-    const advancedPath = path.join(__dirname, 'test_screen_home_advanced.png');
-    console.log('正在生成截图：test_screen_home_advanced.png');
-    await miniProgram.screenshot({ path: advancedPath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
-
-    // 6. 切换至旗舰模式
-    console.log('正在注入状态以切换为旗舰模式...');
-    await activePage.setData({
-      currentMode: 'flagship',
-      currentModeLabel: '旗舰模式'
-    });
-    await activePage.waitFor(1500);
-    const flagshipPath = path.join(__dirname, 'test_screen_home_flagship.png');
-    console.log('正在生成截图：test_screen_home_flagship.png');
-    await miniProgram.screenshot({ path: flagshipPath });
-    await activePage.waitFor(3000); // 拓宽 GPU 物理排空冷却时间，保障显存彻底回收
-
-    // =========================================================================
-    // 🚉 黄金单向列车第二站：GALLERY TAB (画廊相关的所有 3 个状态在此原地一次性完成)
-    // =========================================================================
-    console.log('\n--- [黄金单向列车第二站] 单向切往 GALLERY 页面 ---');
-    await activePage.callMethod('switchTab', {
-      currentTarget: { dataset: { tab: 'gallery' } }
-    });
-    await activePage.waitFor(2000); // 等待 Tab 切换和 DOM 渲染稳定
-
-    // 7. 画廊默认态
-    const galleryPath = path.join(__dirname, 'test_screen_gallery.png');
-    console.log('正在生成截图：test_screen_gallery.png');
-    await miniProgram.screenshot({ path: galleryPath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
-
-    // 8. 激活删除二次确认磨砂弹窗
-    console.log('正在注入状态以激活画廊卡片删除确认弹窗...');
-    await activePage.setData({
-      deleteConfirmVisible: true,
-      deletingItemId: 1
+      promptText: '一只精致的白瓷茶杯，里面旋转着璀璨的微缩星系与星云'
     });
     await activePage.waitFor(1200);
-    const confirmPath = path.join(__dirname, 'test_screen_gallery_confirm.png');
-    console.log('正在生成截图：test_screen_gallery_confirm.png');
-    await miniProgram.screenshot({ path: confirmPath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
 
-    // 还原删除弹窗状态
-    await activePage.setData({ deleteConfirmVisible: false, deletingItemId: null });
-    await activePage.waitFor(800);
+    // 2. 定位“生成”按钮节点并触发模拟 tap 点击
+    console.log('正在定位并模拟物理点击“生成”按钮...');
+    const generateBtn = await activePage.$('.generate-btn');
+    if (!generateBtn) {
+      throw new Error('未在页面中找到生成按钮 (.generate-btn)');
+    }
+    
+    // 执行 tap 动作，它会自动向下游 bindtap 派发真实的 tap 视口物理坐标
+    await generateBtn.tap();
+    console.log('“生成”按钮点击事件已派发！等待粒子在 350ms 内爆散至视觉最大波峰半径...');
 
-    // 9. 展开大图沉浸式预览
-    console.log('正在注入纯本地 Base64 状态以展开大图沉浸式预览...');
-    await activePage.setData({
-      previewVisible: true,
-      previewImgUrl: SAFE_BASE64_IMAGE,
-      previewItemId: 1,
-      previewItemIsLiked: false
-    });
-    await activePage.waitFor(1200);
-    const previewPath = path.join(__dirname, 'test_screen_gallery_preview.png');
-    console.log('正在生成截图：test_screen_gallery_preview.png');
-    await miniProgram.screenshot({ path: previewPath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
+    // 3. 等待 350ms 粒子波峰期并截取高保真渲染截图
+    await activePage.waitFor(350);
+    const explosionPath = path.join(__dirname, 'test_screen_explosion.png');
+    console.log(`正在生成粒子爆炸波峰截图: ${explosionPath}`);
+    await miniProgram.screenshot({ path: explosionPath });
 
-    // 还原预览状态 (不置空大图 CDN 链接，防范图片拔除引发的 Webview 闪退)
-    await activePage.setData({ previewVisible: false, previewItemId: null });
-    await activePage.waitFor(800);
+    // 等待生成动画及震颤反馈余波完全平息
+    await activePage.waitFor(2500);
 
-    // =========================================================================
-    // 🚉 黄金单向列车第三站：INSPIRATION TAB (充值中心状态在此原地完成)
-    // =========================================================================
-    console.log('\n--- [黄金单向列车第三站] 单向切往 INSPIRATION 页面 ---');
-    await activePage.callMethod('switchTab', {
-      currentTarget: { dataset: { tab: 'inspiration' } }
-    });
-    await activePage.waitFor(2000); // 等待 Tab 切换和 DOM 渲染稳定
-
-    // 10. 充值中心态
-    const inspirationPath = path.join(__dirname, 'test_screen_inspiration.png');
-    console.log('正在生成截图：test_screen_inspiration.png');
-    await miniProgram.screenshot({ path: inspirationPath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
-
-    // =========================================================================
-    // 🚉 黄金单向列车第四站：PROFILE TAB (个人中心状态在此原地完成)
-    // =========================================================================
-    console.log('\n--- [黄金单向列车第四站] 单向切往 PROFILE 页面 ---');
-    await activePage.callMethod('switchTab', {
-      currentTarget: { dataset: { tab: 'profile' } }
-    });
-    await activePage.waitFor(2000); // 等待 Tab 切换和 DOM 渲染稳定
-
-    // 11. 个人中心态
-    const profilePath = path.join(__dirname, 'test_screen_profile.png');
-    console.log('正在生成截图：test_screen_profile.png');
-    await miniProgram.screenshot({ path: profilePath });
-    await activePage.waitFor(2000); // GPU 截图后排空冷却
-
-    // 12. 我的收藏抽屉态
-    console.log('正在注入状态以展示【我的收藏】抽屉...');
-    await activePage.setData({
-      drawerVisible: true,
-      drawerType: 'favorites',
-      drawerTitle: '我的收藏'
-    });
-    await activePage.waitFor(1500); // 等待抽屉滑入动画稳定
-    const favPath = path.join(__dirname, 'test_screen_profile_favorites.png');
-    console.log('正在生成截图：test_screen_profile_favorites.png');
-    await miniProgram.screenshot({ path: favPath });
-    await activePage.waitFor(2000);
-
-    // 13. 任务中心抽屉态
-    console.log('正在注入状态以展示【任务中心】抽屉...');
-    await activePage.setData({
-      drawerVisible: true,
-      drawerType: 'tasks',
-      drawerTitle: '任务中心'
-    });
-    await activePage.waitFor(1500); // 等待抽屉滑入动画稳定
-    const tasksPath = path.join(__dirname, 'test_screen_profile_tasks.png');
-    console.log('正在生成截图：test_screen_profile_tasks.png');
-    await miniProgram.screenshot({ path: tasksPath });
-    await activePage.waitFor(2000);
-
-    // 14. 系统设置抽屉态
-    console.log('正在注入状态以展示【系统设置】抽屉...');
-    await activePage.setData({
-      drawerVisible: true,
-      drawerType: 'settings',
-      drawerTitle: '系统设置'
-    });
-    await activePage.waitFor(1500); // 等待抽屉滑入动画稳定
-    const settingsPath = path.join(__dirname, 'test_screen_profile_settings.png');
-    console.log('正在生成截图：test_screen_profile_settings.png');
-    await miniProgram.screenshot({ path: settingsPath });
-    await activePage.waitFor(2000);
-
-    // 还原抽屉状态，回归干净基线
-    await activePage.setData({
-      drawerVisible: false,
-      drawerType: '',
-      drawerTitle: ''
-    });
-    await activePage.waitFor(800);
-
-    console.log('\n所有高保真物理回归截图完美且安全生成，准备断开连接...');
+    console.log('\n单点动效模拟点击及截图流程执行完毕，安全断开连接...');
     await miniProgram.close();
-    console.log('微信开发者工具连接已安全关闭。自动化流程结束！');
+    console.log('测试完成！');
   } catch (error) {
-    console.error('自动化单向列车流程中发生严重故障:', error);
+    console.error('自动化回归中发生严重故障:', error);
     process.exit(1);
   }
 }

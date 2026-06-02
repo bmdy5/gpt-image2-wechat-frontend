@@ -12,11 +12,6 @@
         <view class="icon-brand"></view>
         <text class="brand-title">Visionary AI</text>
       </view>
-      
-      <!-- Top Badge showing Inspiration Points -->
-      <view class="points-badge" hover-class="btn-hover" bindtap="onPointsTap">
-        <text class="points-text">灵感值 <text class="points-val">{{inspirationPoints}}</text></text>
-      </view>
     </view>
   </view>
 

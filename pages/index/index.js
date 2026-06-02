@@ -173,9 +173,12 @@ Page({
       modeDropdownVisible: false,
       styleModalVisible: false
     }, () => {
-      // 2. 如果切换回首页，且动画循环已终止，重新安全预热并激活粒子系统！
-      if (tab === 'home' && !this.bgAnimId) {
-        this.initBgParticleCanvas();
+      // 2. 如果切换回首页，重新安全预热并激活背景及爆炸粒子系统，防范微信同层渲染节点 Remount 导致上下文句柄失效！
+      if (tab === 'home') {
+        if (!this.bgAnimId) {
+          this.initBgParticleCanvas();
+        }
+        this.initFxExplosionCanvas();
       }
     });
   },
@@ -315,12 +318,6 @@ Page({
 
   stopBubble() {
     // Helper to stop event propagation
-  },
-
-  onPointsTap() {
-    this.setData({
-      activeTab: 'inspiration' // Switch to Recharge page directly
-    });
   },
 
   // ========================================================
@@ -730,6 +727,34 @@ Page({
 
     this.triggerExplosionParticles(centerX, centerY, this.data.currentMode);
 
+    // ========================================================
+    // 触觉动效自愈自适应分发器 (Haptic Feedback Categorization)
+    // ========================================================
+    const mode = this.data.currentMode;
+    if (mode === 'flagship') {
+      // 旗舰模式：连环双重震颤模型 (Double-Strike Haptic Resonation)
+      wx.vibrateShort({
+        type: 'heavy',
+        success: () => {
+          setTimeout(() => {
+            wx.vibrateShort({
+              type: 'medium'
+            });
+          }, 150);
+        }
+      });
+    } else if (mode === 'advanced') {
+      // 进阶模式：中等弹性触感 (Medium segment rebound)
+      wx.vibrateShort({
+        type: 'medium'
+      });
+    } else {
+      // 普通模式：轻微清脆反馈 (Light quick tap)
+      wx.vibrateShort({
+        type: 'light'
+      });
+    }
+
     this.setData({
       isGenerating: true,
       inspirationPoints: this.data.inspirationPoints - cost
@@ -968,7 +993,20 @@ Page({
     query.select('#fx-canvas')
       .fields({ node: true, size: true })
       .exec((res) => {
-        if (!res || !res[0]) return;
+        // 核心自愈：如果微信底层同层渲染尚未就绪或尺寸未拉伸稳定（尺寸为0），延迟 250ms 发起安全重试
+        if (!res || !res[0] || !res[0].node || res[0].width === 0) {
+          if (!this.fxCanvasRetryCount) this.fxCanvasRetryCount = 0;
+          if (this.fxCanvasRetryCount < 3) {
+            this.fxCanvasRetryCount++;
+            setTimeout(() => {
+              this.initFxExplosionCanvas();
+            }, 250);
+          }
+          return;
+        }
+
+        // 重置重试计数器
+        this.fxCanvasRetryCount = 0;
 
         const canvas = res[0].node;
         const ctx = canvas.getContext('2d');
@@ -1012,6 +1050,11 @@ Page({
       const size = Math.random() * sizeMax + 1.2;
       const hue = Math.random() * 25 + 10; 
 
+      // 实时自愈自适应 HSL -> RGB 原生拍平转换算法，规避微信小程序 Canvas 2D 原生同层渲染不支持 hsla 格式的严重底层 Bug！
+      const r = 255;
+      const g = Math.round((hue / 60) * 178.5 + 76.5);
+      const b = 76;
+
       this.fxParticles.push({
         x,
         y,
@@ -1020,7 +1063,7 @@ Page({
         size,
         life: 1.0,
         decay,
-        color: `hsla(${hue}, 100%, 65%, `
+        r, g, b
       });
     }
 
@@ -1053,7 +1096,7 @@ Page({
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color + p.life + ')';
+        ctx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',' + p.life + ')';
         ctx.fill();
       }
 
