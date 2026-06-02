@@ -1,0 +1,386 @@
+<view class="container" style="--statusBarHeight: {{statusBarHeight}}px; --navBarHeight: {{navBarHeight}}px; --customHeaderHeight: {{customHeaderHeight}}px; --safeAreaBottom: {{safeAreaBottom}}px;">
+  <!-- Particle Background Canvas -->
+  <canvas type="2d" id="particle-canvas" class="particle-canvas" bindtouchstart="handleTouchStart" bindtouchmove="handleTouchMove" bindtouchend="handleTouchEnd"></canvas>
+  
+  <!-- FX Canvas for Explosions -->
+  <canvas type="2d" id="fx-canvas" class="fx-canvas"></canvas>
+
+  <!-- Top App Bar (Only for Home, Gallery, and Profile tabs) -->
+  <view class="top-app-bar border-b-hairline" style="height: {{customHeaderHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content">
+      <view class="brand">
+        <view class="icon-brand"></view>
+        <text class="brand-title">Visionary AI</text>
+      </view>
+      
+      <!-- Top Badge showing Inspiration Points -->
+      <view class="points-badge" hover-class="btn-hover" bindtap="onPointsTap">
+        <text class="points-text">灵感值 <text class="points-val">{{inspirationPoints}}</text></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Main ScrollView -->
+  <scroll-view class="main-content" scroll-y style="padding-top: {{customHeaderHeight}}px; padding-bottom: {{activeTab === 'home' ? (120 + safeAreaBottom) : (90 + safeAreaBottom)}}px;">
+    
+    <!-- ============================================================
+         TAB 1: 首页 (Home - Prompt Generator)
+         ============================================================ -->
+    <block wx:if="{{activeTab === 'home'}}">
+      <view class="generation-view">
+        <!-- Textarea Container -->
+        <view class="textarea-wrapper border-hairline {{isEnhancing ? 'ai-enhancing-border' : ''}}">
+          <textarea 
+            class="prompt-input" 
+            placeholder="输入你想生成的画面描述..." 
+            placeholder-class="prompt-placeholder"
+            maxlength="500" 
+            value="{{promptText}}"
+            disabled="{{isGenerating}}"
+            bindinput="onPromptInput"
+          />
+        </view>
+
+        <!-- Custom Capsule Utility Bar -->
+        <view class="utility-bar border-hairline">
+          <!-- Mode Dropdown Trigger -->
+          <view class="mode-dropdown-trigger {{modeDropdownVisible ? 'active' : ''}}" bindtap="toggleModeDropdown">
+            <view class="icon-tune"></view>
+            <text class="mode-label">{{currentModeLabel}}</text>
+            <view class="icon-arrow icon-expand-more {{modeDropdownVisible ? 'rotate' : ''}}"></view>
+          </view>
+          
+          <view class="divider-v"></view>
+
+          <!-- Style Selection Modal Trigger -->
+          <view class="style-trigger" hover-class="btn-hover" bindtap="openStyleModal">
+            <view class="icon-style"></view>
+            <text class="bar-btn-text">风格选择</text>
+          </view>
+          
+          <view class="divider-v"></view>
+
+          <!-- AI Enhance Prompt Toggle -->
+          <view class="enhance-trigger {{isEnhancing ? 'active' : ''}}" hover-class="btn-hover" bindtap="toggleEnhance">
+            <view class="icon-auto-fix-high"></view>
+            <text class="bar-btn-text">润色提示词</text>
+          </view>
+
+          <!-- Character limits tracker -->
+          <view class="char-counter">
+            <text class="count-num">{{charCount}}</text>/500
+          </view>
+
+          <!-- Dropdown Popup for Mode Selection -->
+          <view class="mode-dropdown-menu border-hairline {{modeDropdownVisible ? 'show' : ''}}">
+            <view class="mode-option {{currentMode === 'basic' ? 'selected' : ''}}" bindtap="selectMode" data-mode="basic" data-label="普通模式">普通模式</view>
+            <view class="mode-option {{currentMode === 'advanced' ? 'selected' : ''}}" bindtap="selectMode" data-mode="advanced" data-label="进阶模式">进阶模式</view>
+            <view class="mode-option {{currentMode === 'flagship' ? 'selected' : ''}}" bindtap="selectMode" data-mode="flagship" data-label="旗舰模式">旗舰模式</view>
+          </view>
+        </view>
+
+        <!-- Quick Chips Tags -->
+        <scroll-view class="suggestions-row" scroll-x enable-flex>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="超 surrealism 梦幻风景，悬浮水晶群岛，淡粉霓虹瀑布，柔和光晕效果">超现实主义风景</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="现代极简主义客厅，大片白沙水泥墙，温暖树影光斑掠过，自然原木饰面">极简主义设计</view>
+          <view class="suggestion-chip border-hairline" bindtap="fillPrompt" data-text="复古未来主义都市，赛博霓虹粉蓝街道，飞空艇，复古像素颗粒质感">复古未来主义</view>
+        </scroll-view>
+      </view>
+    </block>
+
+    <!-- ============================================================
+         TAB 2: 画廊 (History Gallery - v2/code.html)
+         ============================================================ -->
+    <block wx:if="{{activeTab === 'gallery'}}">
+      <view class="gallery-view">
+        <!-- Header Text -->
+        <view class="gallery-header">
+          <text class="view-title">历史画廊</text>
+          <text class="view-subtitle">回顾您的AI艺术创作</text>
+        </view>
+
+        <!-- Waterfall Grid Layout -->
+        <block wx:if="{{galleryItems.length > 0}}">
+          <view class="waterfall-grid">
+            <view 
+              wx:for="{{galleryItems}}" 
+              wx:key="id" 
+              class="waterfall-item {{item.isFading ? 'fade-out' : ''}}"
+            >
+              <view class="waterfall-card border-hairline">
+                <image class="card-img" src="{{item.img}}" mode="widthFix"></image>
+                
+                <!-- Floating Action Overlays -->
+                <view class="card-actions-overlay">
+                  <view class="card-action-btn" bindtap="fillPrompt" data-text="{{item.desc}}" data-tab-switch="true">
+                    <view class="icon-retry"></view>
+                  </view>
+                  
+                  <view class="card-action-btn delete-btn" bindtap="deleteGalleryItem" data-id="{{item.id}}">
+                    <view class="icon-delete"></view>
+                  </view>
+                </view>
+              </view>
+              <view class="card-meta">
+                <text class="card-desc">{{item.desc}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
+
+        <!-- Empty State Panel -->
+        <block wx:else>
+          <view class="empty-state">
+            <view class="empty-state-orb">
+              <view class="icon-empty"></view>
+            </view>
+            <text class="empty-title">画廊空空如也</text>
+            <text class="empty-desc-text">让AI激发您的灵感，开始第一次创作吧</text>
+            <button class="empty-action-btn btn-primary" hover-class="empty-action-btn-hover" hover-stay-time="150" bindtap="goToGenerate">
+              <view class="btn-icon icon-add-circle" style="margin-right: 6px;"></view>
+              去创作首幅艺术品
+            </button>
+          </view>
+        </block>
+
+      </view>
+    </block>
+
+    <!-- ============================================================
+         TAB 3: 灵感 (Recharge Center - v3_1/screen.png)
+         ============================================================ -->
+    <block wx:if="{{activeTab === 'inspiration'}}">
+      <view class="recharge-view">
+        <!-- Sub-Tabs Selector -->
+        <view class="recharge-tabs">
+          <view 
+            class="recharge-tab-item {{rechargeSubTab === 'ios' ? 'active' : ''}}" 
+            bindtap="switchRechargeSubTab" 
+            data-subtab="ios"
+          >IOS</view>
+          <view 
+            class="recharge-tab-item {{rechargeSubTab === 'web' ? 'active' : ''}}" 
+            bindtap="switchRechargeSubTab" 
+            data-subtab="web"
+          >WEB / ANDROID</view>
+        </view>
+
+        <!-- Main Title -->
+        <view class="recharge-header mt-6">
+          <text class="recharge-title">充值中心</text>
+          <text class="recharge-subtitle">解锁更多 AI 创作力</text>
+        </view>
+
+        <!-- Current Balance -->
+        <view class="balance-card">
+          <text class="balance-label">当前余额</text>
+          <view class="balance-row">
+            <text class="balance-value">{{inspirationPoints}}</text>
+            <text class="balance-unit">点</text>
+          </view>
+        </view>
+
+        <!-- Promotion Banner -->
+        <view class="promo-banner border-hairline">
+          <view class="promo-left">
+            <view class="check-icon-circle">✓</view>
+            <text class="promo-text">赚取更多灵感值</text>
+          </view>
+          <!-- Image SVG: chevron-right -->
+          <view class="chevron-right icon-chevron"></view>
+        </view>
+
+        <!-- Task Item: Watch Video -->
+        <view class="video-task-card border-hairline mt-6" bindtap="watchVideoPoints">
+          <view class="video-task-left">
+            <!-- Image SVG: play-icon -->
+            <view class="play-icon icon-play"></view>
+            <view class="video-task-meta">
+              <text class="video-task-title">观看视频领灵感值</text>
+              <text class="video-task-reward">+5 灵感值</text>
+            </view>
+          </view>
+          <text class="go-watch-btn">去观看</text>
+        </view>
+
+        <!-- Pricing Tiers Grid -->
+        <view class="pricing-section-title mt-6">
+          <text class="section-label">选择充值额度</text>
+          <!-- Image SVG: arrow-up-icon -->
+          <view class="arrow-up-icon icon-arrow-up"></view>
+        </view>
+
+        <view class="pricing-list">
+          <view 
+            wx:for="{{rechargeTiers}}" 
+            wx:key="points" 
+            class="price-tier-card border-hairline {{selectedTierIndex === index ? 'selected' : ''}}"
+            bindtap="selectRechargeTier"
+            data-index="{{index}}"
+          >
+            <view class="tier-left">
+              <text class="tier-points">{{item.points}} <text class="unit-text">点</text></text>
+              <text wx:if="{{item.isPopular}}" class="popular-badge">MOST POPULAR</text>
+            </view>
+            <view class="tier-right">
+              <text wx:if="{{item.originalPrice}}" class="original-price">¥{{item.originalPrice}}</text>
+              <text class="tier-price">¥{{item.price}}</text>
+            </view>
+          </view>
+
+          <!-- Custom Input Row -->
+          <view class="price-tier-card border-hairline custom-row {{selectedTierIndex === -1 ? 'selected' : ''}}">
+            <text class="custom-label">自定义</text>
+            <input 
+              class="custom-points-input"
+              type="number"
+              placeholder="输入充值金额" 
+              placeholder-class="custom-placeholder"
+              value="{{customRechargeVal}}"
+              bindinput="onCustomRechargeInput"
+            />
+            <text class="custom-unit">点</text>
+          </view>
+        </view>
+
+        <!-- Submit Button -->
+        <button class="recharge-btn mt-6" bindtap="submitRecharge">立即充值</button>
+        <text class="recharge-footer">充值即代表同意服务协议</text>
+      </view>
+    </block>
+
+    <!-- ============================================================
+         TAB 4: 我的 (Profile Settings - v3_2/screen.png)
+         ============================================================ -->
+    <block wx:if="{{activeTab === 'profile'}}">
+      <view class="profile-view">
+        <!-- User Info block -->
+        <view class="profile-user-card">
+          <view class="profile-avatar-wrap">
+            <view class="icon-avatar"></view>
+          </view>
+          <view class="profile-user-info">
+            <text class="profile-username">wx_9a2f3c</text>
+            <view class="profile-uid-row" bindtap="copyUID">
+              <text class="profile-uid">UID: 8273641</text>
+              <view class="icon-copy"></view>
+            </view>
+          </view>
+        </view>
+
+        <!-- Stats row -->
+        <view class="profile-stats mt-6">
+          <view class="stat-col" bindtap="onPointsTap">
+            <text class="stat-num">{{inspirationPoints}}</text>
+            <text class="stat-label">可用灵感值</text>
+          </view>
+          <view class="divider-v-large"></view>
+          <view class="stat-col" bindtap="switchTab" data-tab="gallery">
+            <text class="stat-num">{{galleryItems.length}}</text>
+            <text class="stat-label">我的作品</text>
+          </view>
+        </view>
+
+        <!-- Profile Settings Rows -->
+        <view class="settings-list mt-6">
+          <view class="settings-row border-hairline">
+            <text class="settings-label">我的收藏</text>
+            <view class="icon-chevron"></view>
+          </view>
+          <view class="settings-row border-hairline">
+            <text class="settings-label">任务中心</text>
+            <view class="icon-chevron"></view>
+          </view>
+          <view class="settings-row border-hairline">
+            <text class="settings-label">系统设置</text>
+            <view class="icon-chevron"></view>
+          </view>
+        </view>
+
+      </view>
+    </block>
+
+  </scroll-view>
+
+  <!-- Bottom Floating Action Button (Only on Home tab) -->
+  <view class="bottom-action-bar" style="bottom: {{activeTab === 'home' ? (100 + safeAreaBottom) : -200}}px; opacity: {{activeTab === 'home' ? 1 : 0}}; pointer-events: {{activeTab === 'home' ? 'auto' : 'none'}};">
+    <button class="generate-btn {{isGenerating ? 'is-generating' : ''}}" hover-class="generate-btn-hover" hover-stay-time="150" bindtap="startGeneration">
+      <view class="spinner"></view>
+      <text class="btn-text-default">生成</text>
+      <text class="btn-text-loading">处理中...</text>
+    </button>
+  </view>
+
+  <!-- High-Fidelity Custom Glass TabBar -->
+  <view class="bottom-nav-bar border-t-hairline" style="height: {{80 + safeAreaBottom}}px; padding-bottom: {{safeAreaBottom}}px;">
+    <!-- Home Tab -->
+    <view class="tab-item tab-item-home {{activeTab === 'home' ? 'active' : ''}}" bindtap="switchTab" data-tab="home">
+      <view class="tab-icon tab-icon-home"></view>
+      <text class="tab-label">首页</text>
+    </view>
+    
+    <!-- Gallery Tab -->
+    <view class="tab-item tab-item-gallery {{activeTab === 'gallery' ? 'active' : ''}}" bindtap="switchTab" data-tab="gallery">
+      <view class="tab-icon tab-icon-gallery"></view>
+      <text class="tab-label">画廊</text>
+    </view>
+
+    <!-- Inspiration Tab (Recharge Page) -->
+    <view class="tab-item tab-item-inspiration {{activeTab === 'inspiration' ? 'active' : ''}}" bindtap="switchTab" data-tab="inspiration">
+      <view class="tab-icon tab-icon-inspiration"></view>
+      <text class="tab-label">灵感</text>
+    </view>
+
+    <!-- Profile Tab -->
+    <view class="tab-item tab-item-profile {{activeTab === 'profile' ? 'active' : ''}}" bindtap="switchTab" data-tab="profile">
+      <view class="tab-icon tab-icon-profile"></view>
+      <text class="tab-label">我的</text>
+    </view>
+  </view>
+
+  <!-- Style Selection Drawer Modal -->
+  <view class="modal-overlay {{styleModalVisible ? 'active' : ''}}" bindtap="closeStyleModal">
+    <view class="modal-content" catchtap="stopBubble">
+      <view class="modal-header">
+        <text class="modal-title">风格选择</text>
+        <view class="modal-close" bindtap="closeStyleModal">
+          <view class="icon-close"></view>
+        </view>
+      </view>
+      
+      <view class="style-grid">
+        <!-- Cyberpunk Style -->
+        <view class="style-card" bindtap="selectStyle" data-style="赛博朋克">
+          <view class="style-card-image style-cyberpunk">
+            <view class="icon-style" style="transform: scale(1.5);"></view>
+          </view>
+          <text class="style-name">赛博朋克</text>
+        </view>
+
+        <!-- Oil Painting Style -->
+        <view class="style-card" bindtap="selectStyle" data-style="油画">
+          <view class="style-card-image style-oil">
+            <view class="icon-style" style="transform: scale(1.5);"></view>
+          </view>
+          <text class="style-name">油画</text>
+        </view>
+
+        <!-- 3D Render Style -->
+        <view class="style-card" bindtap="selectStyle" data-style="3D渲染">
+          <view class="style-card-image style-3d">
+            <view class="icon-style" style="transform: scale(1.5);"></view>
+          </view>
+          <text class="style-name">3D渲染</text>
+        </view>
+
+        <!-- Anime Style -->
+        <view class="style-card" bindtap="selectStyle" data-style="二次元">
+          <view class="style-card-image style-anime">
+            <view class="icon-style" style="transform: scale(1.5);"></view>
+          </view>
+          <text class="style-name">二次元</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

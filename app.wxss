@@ -1,0 +1,84 @@
+/* Design System Tokens */
+page {
+  /* Color Tokens */
+  --primary: #a13a00;
+  --on-primary: #ffffff;
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-bright: #fcf8fb;
+  --surface-dim: #dcd9dc;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f6f3f5;
+  --surface-container: #f0edef;
+  --surface-container-high: #eae7ea;
+  --surface-container-highest: #e4e2e4;
+  
+  --on-background: #1b1b1d;
+  --on-surface: #1b1b1d;
+  --on-surface-variant: #58423a;
+  --outline: #8b7268;
+  --outline-variant: #dfc0b5;
+  
+  --secondary: #632ce5;
+  --secondary-container: #7c4dff;
+  --on-secondary-container: #fcf6ff;
+  --secondary-fixed: #e8deff;
+  --secondary-fixed-dim: #cdbdff;
+  
+  --tertiary: #92471d;
+  --tertiary-container: #b15e33;
+  --on-tertiary-container: #fffbff;
+  --tertiary-fixed: #ffdbcc;
+  --tertiary-fixed-dim: #ffb693;
+  
+  --primary-fixed: #ffdbce;
+  --primary-fixed-dim: #ffb598;
+  
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Spacings */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Global Typographies */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: var(--background);
+  color: var(--on-background);
+  box-sizing: border-box;
+}
+
+view, text, textarea, button, input {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Hairline border utility */
+.border-hairline {
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Disable native tap overlay */
+button::after {
+  border: none;
+}
+
+.hide-scrollbar ::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  color: transparent;
+  display: none;
+}

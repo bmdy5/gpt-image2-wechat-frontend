@@ -1,0 +1,13 @@
+{
+  "name": "gpt-image2-wechat-automation",
+  "version": "1.0.0",
+  "description": "WeChat Mini Program High-Fidelity UI Testing and Automation",
+  "main": "screenshot.js",
+  "dependencies": {
+    "miniprogram-automator": "^0.12.1"
+  },
+  "scripts": {
+    "screenshot": "node screenshot.js"
+  },
+  "private": true
+}

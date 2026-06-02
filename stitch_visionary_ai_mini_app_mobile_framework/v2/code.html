@@ -1,0 +1,365 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
+<title>Visionary AI - 画廊</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fcf8fb",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#ffdbcc",
+                      "tertiary": "#92471d",
+                      "on-secondary-fixed-variant": "#4f00d0",
+                      "primary-fixed-dim": "#ffb598",
+                      "surface-bright": "#fcf8fb",
+                      "surface-container": "#f0edef",
+                      "secondary-container": "#7c4dff",
+                      "on-background": "#1b1b1d",
+                      "on-secondary-container": "#fcf6ff",
+                      "surface-container-low": "#f6f3f5",
+                      "on-secondary-fixed": "#20005f",
+                      "outline": "#8b7268",
+                      "tertiary-container": "#b15e33",
+                      "on-primary-container": "#fffbff",
+                      "inverse-primary": "#ffb598",
+                      "on-primary-fixed-variant": "#7e2c00",
+                      "on-tertiary-fixed-variant": "#773208",
+                      "surface-variant": "#e4e2e4",
+                      "secondary-fixed-dim": "#cdbdff",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#e4e2e4",
+                      "surface-container-high": "#eae7ea",
+                      "surface-dim": "#dcd9dc",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed": "#351000",
+                      "inverse-surface": "#303032",
+                      "inverse-on-surface": "#f3f0f2",
+                      "on-tertiary-container": "#fffbff",
+                      "primary": "#a13a00",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#ffdbce",
+                      "tertiary-fixed-dim": "#ffb693",
+                      "outline-variant": "#dfc0b5",
+                      "on-surface": "#1b1b1d",
+                      "on-primary-fixed": "#370e00",
+                      "primary-container": "#c3511a",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#58423a",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#e8deff",
+                      "background": "#fcf8fb",
+                      "on-secondary": "#ffffff",
+                      "surface-tint": "#a53c01",
+                      "secondary": "#632ce5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "xs": "4px",
+                      "safe_area_bottom": "env(safe-area-inset-bottom)",
+                      "xl": "32px",
+                      "unit": "4px",
+                      "md": "16px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-bold": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-sm": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "28px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "17px",
+                              {
+                                      "lineHeight": "26px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "15px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Soft-Tech Glassmorphism & UI FX */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-primary {
+            background-color: theme('colors.primary-container');
+            color: theme('colors.on-primary-container');
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        .primary-glow {
+            box-shadow: 0 0 20px rgba(230, 107, 51, 0.15);
+        }
+
+        .fade-out {
+            animation: fadeOut 0.4s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+        /* Multi-column layout */
+        .waterfall-grid {
+            column-count: 2;
+            column-gap: theme('spacing.lg');
+        }
+        .waterfall-item {
+            break-inside: avoid;
+            margin-bottom: theme('spacing.lg');
+        }
+
+        /* Hide scrollbar for clean aesthetic */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-[calc(72px+env(safe-area-inset-bottom))] pt-[72px] antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-md py-sm bg-white/70 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform active:scale-95">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bubble_chart</span>
+<h1 class="text-headline-md font-headline-md text-primary">Visionary AI</h1>
+</div>
+<div class="bg-white/50 px-3 py-1 rounded-full">
+<span class="font-label-bold text-label-bold text-primary">灵感值 80</span>
+</div>
+</header>
+<!-- Main ScrollView -->
+<main class="w-full h-full px-md overflow-y-auto pt-md">
+<!-- Header Text -->
+<div class="">
+<h2 class="text-[20px] font-medium text-on-background/80 mb-1 tracking-tight">历史画廊</h2>
+<p class="text-[13px] text-on-surface-variant/70">回顾您的AI艺术创作</p>
+</div>
+<!-- Waterfall Grid -->
+<div class="waterfall-grid w-full" id="history-grid">
+<!-- Item 1 -->
+<div class="waterfall-item group relative active:scale-95 transition-transform duration-200" style="border: none;">
+<div class="relative rounded-xl overflow-hidden border border-outline-variant/30">
+<img class="w-full h-auto object-cover" data-alt="A mesmerizing digital art piece featuring a swirling vortex of deep purple and coral orange nebulas. The composition is dynamic and ethereal, set against a dark void that highlights the vibrant, glassmorphism-inspired light effects. The mood is futuristic and deeply inspiring, reflecting a high-end AI creation within a Soft-Tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYorjDASP6BiWN8BqUMV6co7VAkYKnXG-Wf8un89g-YL5MoDccZKhp_3HeLPhilkQxtPBDhuty19WHFoCbuT1YpBN120gGaPTC5paIy72m39c6GnIl_nnbn_JzXzODKR1eIfUE1WTBJELckV3kPwyf9J73afPE33chKZGkh0SUNmCWGc_C2Em84YFdPc3mHWF3I3GZZFGoebKC-xdZaBPyoIih2xCPWu6tJYWTTuOH9woDvPJ6-qdt4RBHgHaooEzQh2-rKiE6aQ">
+<!-- Floating Actions -->
+<div class="absolute inset-0 bg-black/30 flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">auto_awesome</span>
+</button>
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">share</span>
+</button>
+<button class="delete-btn text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">delete</span>
+</button>
+</div>
+</div>
+<div class="mt-2 px-1">
+<p class="text-[11px] leading-relaxed text-on-surface-variant/70 line-clamp-2">A mesmerizing digital art piece featuring a swirling vortex...</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="waterfall-item group relative active:scale-95 transition-transform duration-200" style="border: none;">
+<div class="relative rounded-xl overflow-hidden border border-outline-variant/30">
+<img class="w-full h-auto object-cover aspect-[3/4]" data-alt="An abstract minimalist landscape rendered in 3D, featuring smooth, flowing dunes of pale coral and soft grey. A bright, diffused light source casts gentle ambient shadows, emphasizing the smooth, soft-tech textures. The scene evokes a sense of calm clarity and effortless intelligence, perfect for a high-end AI assistant interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDij8yhbdfhbcNGS7YOsg_WnuDKTVdi-vkElenY-JkiEcCxhL0RB9Ltws9uXGr8jya-rKoAWhS75YTKVr1TPLrOUnsxjPeM1VZArEaBGGqVL7hcGZChdMRG2j6EFt5XiZn16JR_Ep8wgtEk5QN1pnfRHtZ1kU-YKHfQEH_kxXGqqjN6_O0rY4_ujyCjZO1Cnn2uwuIy10qVbkwUKxYeghx6LI7-_EJxDlJ8lDVqgXeE4wDW55qdemKsqVJDdy-1xHbWhkNR01t33Q">
+<!-- Floating Actions -->
+<div class="absolute inset-0 bg-black/30 flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">auto_awesome</span>
+</button>
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">share</span>
+</button>
+<button class="delete-btn text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">delete</span>
+</button>
+</div>
+</div>
+<div class="mt-2 px-1">
+<p class="text-[11px] leading-relaxed text-on-surface-variant/70 line-clamp-2">Minimalist abstract landscape, soft lighting, 3d render...</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="waterfall-item group relative active:scale-95 transition-transform duration-200" style="border: none;">
+<div class="relative rounded-xl overflow-hidden border border-outline-variant/30">
+<img class="w-full h-auto object-cover aspect-square" data-alt="A futuristic portrait of a robot with a glass-like translucent shell, illuminated from within by a soft violet glow. The background is a clean, bright minimalist white, emphasizing the advanced technological theme. The styling perfectly matches a high-end, human-centric AI design system, combining precision with approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC00AzKqkkAaooXRMLukNg4Tj1Y1m0ex_qVkb_IWLJfuvTh2K05_4AnbVBoaDtnzpJiCY_v8gmzaaXgNsJnEW8ieM9pOJLQOOa40BR2XhQB43G6Gumkddb7jpskhmO3D8YUQFuhLNhipsv5wvvi9KyVpWlPhW3D5gVVzBYthhVUKZKiXwg6EpmtlpcoVBmabgOevNn0x9UFajZlVsi5oRLliouSLq0bEsD9gHOYDG8TsIAdGFofsq2fMGEZJfVkLdUBvFXTwNcUMg">
+<!-- Floating Actions -->
+<div class="absolute inset-0 bg-black/30 flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">auto_awesome</span>
+</button>
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">share</span>
+</button>
+<button class="delete-btn text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">delete</span>
+</button>
+</div>
+</div>
+<div class="mt-2 px-1">
+<p class="text-[11px] leading-relaxed text-on-surface-variant/70 line-clamp-2">Futuristic robot portrait, translucent glass shell...</p>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="waterfall-item group relative active:scale-95 transition-transform duration-200" style="border: none;">
+<div class="relative rounded-xl overflow-hidden border border-outline-variant/30">
+<img class="w-full h-auto object-cover aspect-[4/5]" data-alt="Abstract visualization of a neural network functioning, depicted as glowing connections in shades of coral orange and violet against a soft, light-drenched background. The image feels airy and unobtrusive, utilizing translucent layers to convey the Soft-Tech Glassmorphism aesthetic of a sophisticated AI assistant." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBibAs4z5RCcHBDfjB2kff7EchEpvU2g5uxB1xI9KNbzkwiKod09pTa3ljTOljft5hp_NNd1dyNFLrCzmiRQv3HTd13ygcClJ2kKTeLh39vBxzA3xwg3Ux25e6wair4bUUZMJ90aI9XBR0hpHKcnlf7HWviUYwuK5DA3ZPuBvnIo31f8aZBhvrw3XJ-pT6MX0jq-cnpu4nf_YfzSOjeiyn2iZ-znuMdazStkBgUEBsg7W0YXqB_CNU14tcgMqokWIeK7AmYVW87Yw">
+<!-- Floating Actions -->
+<div class="absolute inset-0 bg-black/30 flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">auto_awesome</span>
+</button>
+<button class="text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">share</span>
+</button>
+<button class="delete-btn text-white hover:scale-110 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'wght' 200;">delete</span>
+</button>
+</div>
+</div>
+<div class="mt-2 px-1">
+<p class="text-[11px] leading-relaxed text-on-surface-variant/70 line-clamp-2">Neural network visualization, soft light...</p>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default, shown via JS if empty) -->
+<div class="hidden flex-col items-center justify-center h-[60vh] text-center px-lg" id="empty-state">
+<div class="w-48 h-48 mb-lg bg-surface-container-high rounded-full flex items-center justify-center relative">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary-fixed-dim/30 to-transparent rounded-full animate-pulse"></div>
+<span class="material-symbols-outlined text-[64px] text-tertiary-container z-10" style="font-variation-settings: 'FILL' 0;">palette</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-background mb-sm">画廊空空如也</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-xl">让AI激发您的灵感，开始第一次创作吧</p>
+<button class="btn-primary font-label-bold text-label-bold py-3 px-8 rounded-full shadow-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                去创作首幅艺术品
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe_area_bottom bg-white/70 backdrop-blur-xl border-t border-white/10 h-[72px] rounded-t-xl shadow-sm">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-sm text-label-sm">首页</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary active:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">palette</span>
+<span class="font-label-sm text-label-sm font-bold">画廊</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined mb-1">auto_awesome</span>
+<span class="font-label-sm text-label-sm">灵感</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-sm text-label-sm">我的</span>
+</a>
+</nav>
+<script>
+        // Simple delete animation logic
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.waterfall-item');
+                card.classList.add('fade-out');
+                
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    card.remove();
+                    
+                    // Check if empty
+                    const grid = document.getElementById('history-grid');
+                    if (grid.children.length === 0) {
+                        grid.style.display = 'none';
+                        document.getElementById('empty-state').classList.remove('hidden');
+                        document.getElementById('empty-state').classList.add('flex');
+                    }
+                }, 400);
+            });
+        });
+    </script>
+</body></html>
