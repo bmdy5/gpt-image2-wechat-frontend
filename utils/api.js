@@ -1,11 +1,11 @@
-let BASE_URL = 'https://gpt-image2.xiaoliang.tech';
+let BASE_URL = 'https://gpt-image2.xiaoliang.tech/api';
 
 if (typeof wx !== 'undefined' && typeof wx.getAccountInfoSync === 'function') {
   try {
     const accountInfo = wx.getAccountInfoSync();
     const env = accountInfo.miniProgram.envVersion;
     if (env === 'develop') {
-      BASE_URL = 'http://localhost:8000/api';
+      BASE_URL = 'http://localhost:8002/api';
     }
 
   } catch (e) {
