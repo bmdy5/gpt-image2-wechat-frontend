@@ -29,26 +29,7 @@ Page({
     // ==========================================
     // PORTED PAGE 2: 画廊 (History Gallery) DATA
     // ==========================================
-    galleryItems: [
-      {
-        id: 1,
-        img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYorjDASP6BiWN8BqUMV6co7VAkYKnXG-Wf8un89g-YL5MoDccZKhp_3HeLPhilkQxtPBDhuty19WHFoCbuT1YpBN120gGaPTC5paIy72m39c6GnIl_nnbn_JzXzODKR1eIfUE1WTBJELckV3kPwyf9J73afPE33chKZGkh0SUNmCWGc_C2Em84YFdPc3mHWF3I3GZZFGoebKC-xdZaBPyoIih2xCPWu6tJYWTTuOH9woDvPJ6-qdt4RBHgHaooEzQh2-rKiE6aQ',
-        desc: 'A mesmerizing digital art piece featuring a swirling vortex of deep purple and coral orange nebulas. The composition is dynamic and ethereal...',
-        isFading: false
-      },
-      {
-        id: 2,
-        img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDij8yhbdfhbcNGS7YOsg_WnuDKTVdi-vkElenY-JkiEcCxhL0RB9Ltws9uXGr8jya-rKoAWhS75YTKVr1TPLrOUnsxjPeM1VZArEaBGGqVL7hcGZChdMRG2j6EFt5XiZn16JR_Ep8wgtEk5QN1pnfRHtZ1kU-YKHfQEH_kxXGqqjN6_O0rY4_ujyCjZO1Cnn2uwuIy10qVbkwUKxYeghx6LI7-_EJxDlJ8lDVqgXeE4wDW55qdemKsqVJDdy-1xHbWhkNR01t33Q',
-        desc: 'Minimalist abstract landscape, soft lighting, 3d render...',
-        isFading: false
-      },
-      {
-        id: 4,
-        img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBibAs4z5RCcHBDfjB2kff7EchEpvU2g5uxB1xI9KNbzkwiKod09pTa3ljTOljft5hp_NNd1dyNFLrCzmiRQv3HTd13ygcClJ2kKTeLh39vBxzA3xwg3Ux25e6wair4bUUZMJ90aI9XBR0hpHKcnlf7HWviUYwuK5DA3ZPuBvnIo31f8aZBhvrw3XJ-pT6MX0jq-cnpu4nf_YfzSOjeiyn2iZ-znuMdazStkBgUEBsg7W0YXqB_CNU14tcgMqokWIeK7AmYVW87Yw',
-        desc: 'Neural network visualization, soft light...',
-        isFading: false
-      }
-    ],
+    galleryItems: [],
 
     // ==========================================
     // STYLE SELECTION DECOUPLED STATE & CONFIG
