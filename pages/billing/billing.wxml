@@ -1,0 +1,35 @@
+<view class="container">
+  <!-- Custom Nav Bar -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-bar-inner">
+      <view class="nav-back" bindtap="navBack">
+        <view class="icon-back"></view>
+      </view>
+      <text class="nav-title">灵感账单</text>
+    </view>
+  </view>
+
+  <scroll-view class="billing-list" style="padding-top: {{statusBarHeight + 54}}px;" scroll-y enable-back-to-top refresher-enabled="{{true}}" refresher-triggered="{{isRefreshing}}" bindrefresherrefresh="onRefresh">
+    
+    <block wx:if="{{!isLoading && logs.length === 0}}">
+      <view class="empty-state">
+        <text class="empty-text">暂无账单流水</text>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="log-item" wx:for="{{logs}}" wx:key="id">
+        <view class="log-left">
+          <text class="log-title">{{item.description}}</text>
+          <text class="log-time">{{item.created_at}}</text>
+        </view>
+        <view class="log-right">
+          <text class="log-amount {{item.amount > 0 ? 'positive' : 'negative'}}">{{item.amount > 0 ? '+' : ''}}{{item.amount}}</text>
+        </view>
+      </view>
+    </block>
+    
+    <!-- 底部垫起安全区 -->
+    <view style="height: {{safeAreaBottom + 40}}px;"></view>
+  </scroll-view>
+</view>

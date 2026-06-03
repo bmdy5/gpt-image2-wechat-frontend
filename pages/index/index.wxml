@@ -88,7 +88,7 @@
           <!-- Style Selection Modal Trigger -->
           <view class="style-trigger" hover-class="btn-hover" bindtap="openStyleModal">
             <view class="icon-style"></view>
-            <text class="bar-btn-text">风格选择</text>
+            <text class="bar-btn-text">{{selectedStyleName}}</text>
           </view>
 
           <!-- Character limits tracker -->
@@ -136,7 +136,7 @@
                 <block wx:if="{{item.status === 'pending' || item.status === 'generating'}}">
                   <view class="loading-container">
                     <view class="spinner"></view>
-                    <text class="loading-tips">AI绘制中...</text>
+                    <text class="loading-tips">AI绘制中 {{item.progress != null ? item.progress : 0}}%</text>
                   </view>
                 </block>
                 <block wx:else>
@@ -345,15 +345,19 @@
 
         <!-- Profile Settings Rows -->
         <view class="settings-list mt-6">
-          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="favorites" data-title="我的收藏">
+          <view class="settings-row border-hairline" bindtap="navToBilling" hover-class="settings-row-hover" hover-stay-time="150">
+            <text class="settings-label">灵感账单</text>
+            <view class="icon-chevron"></view>
+          </view>
+          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="favorites" data-title="我的收藏" hover-class="settings-row-hover" hover-stay-time="150">
             <text class="settings-label">我的收藏</text>
             <view class="icon-chevron"></view>
           </view>
-          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="tasks" data-title="任务中心">
+          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="tasks" data-title="任务中心" hover-class="settings-row-hover" hover-stay-time="150">
             <text class="settings-label">任务中心</text>
             <view class="icon-chevron"></view>
           </view>
-          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="settings" data-title="系统设置">
+          <view class="settings-row border-hairline" bindtap="openDrawer" data-type="settings" data-title="系统设置" hover-class="settings-row-hover" hover-stay-time="150">
             <text class="settings-label">系统设置</text>
             <view class="icon-chevron"></view>
           </view>
@@ -410,39 +414,22 @@
         </view>
       </view>
       
-      <view class="style-grid">
-        <!-- Cyberpunk Style -->
-        <view class="style-card" bindtap="selectStyle" data-style="赛博朋克">
-          <view class="style-card-image style-cyberpunk">
-            <view class="icon-style" style="transform: scale(1.5);"></view>
+      <scroll-view class="style-scroll" scroll-y>
+        <view class="style-grid">
+          <view wx:for="{{filteredStyles}}" wx:key="id" class="style-card {{item.id === selectedStyleId ? 'selected' : ''}}" bindtap="selectStyle" data-style="{{item.id}}">
+            <view class="style-card-image {{item.cssClass}}">
+              <view class="style-icon-glyph {{item.id}}"></view>
+            </view>
+            <!-- 区分不同级别风格的标签外置，避免被溢出隐藏裁切 -->
+            <view wx:if="{{item.pts === 'HD+'}}" class="style-badge style-badge-hd">进阶</view>
+            <view wx:if="{{item.pts === 'Master'}}" class="style-badge style-badge-master">旗舰</view>
+            <view class="style-card-meta">
+              <text class="style-name">{{item.name}}</text>
+              <text class="style-desc">{{item.desc}}</text>
+            </view>
           </view>
-          <text class="style-name">赛博朋克</text>
         </view>
-
-        <!-- Oil Painting Style -->
-        <view class="style-card" bindtap="selectStyle" data-style="油画">
-          <view class="style-card-image style-oil">
-            <view class="icon-style" style="transform: scale(1.5);"></view>
-          </view>
-          <text class="style-name">油画</text>
-        </view>
-
-        <!-- 3D Render Style -->
-        <view class="style-card" bindtap="selectStyle" data-style="3D渲染">
-          <view class="style-card-image style-3d">
-            <view class="icon-style" style="transform: scale(1.5);"></view>
-          </view>
-          <text class="style-name">3D渲染</text>
-        </view>
-
-        <!-- Anime Style -->
-        <view class="style-card" bindtap="selectStyle" data-style="二次元">
-          <view class="style-card-image style-anime">
-            <view class="icon-style" style="transform: scale(1.5);"></view>
-          </view>
-          <text class="style-name">二次元</text>
-        </view>
-      </view>
+      </scroll-view>
     </view>
   </view>
 

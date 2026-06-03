@@ -43,18 +43,41 @@ Page({
         isFading: false
       },
       {
-        id: 3,
-        img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC00AzKqkkAaooXRMLukNg4Tj1Y1m0ex_qVkb_IWLJfuvTh2K05_4AnbVBoaDtnzpJiCY_v8gmzaaXgNsJnEW8ieM9pOJLQOOa40BR2XhQB43G6Gumkddb7jpskhmO3D8YUQFuhLNhipsv5wvvi9KyVpWlPhW3D5gVVzBYthhVUKZKiXwg6EpmtlpcoVBmabgOevNn0x9UFajZlVsi5oRLliouSLq0bEsD9gHOYDG8TsIAdGFofsq2fMGEZJfVkLdUBvFXTwNcUMg',
-        desc: 'Futuristic robot portrait, translucent glass shell...',
-        isFading: false
-      },
-      {
         id: 4,
         img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBibAs4z5RCcHBDfjB2kff7EchEpvU2g5uxB1xI9KNbzkwiKod09pTa3ljTOljft5hp_NNd1dyNFLrCzmiRQv3HTd13ygcClJ2kKTeLh39vBxzA3xwg3Ux25e6wair4bUUZMJ90aI9XBR0hpHKcnlf7HWviUYwuK5DA3ZPuBvnIo31f8aZBhvrw3XJ-pT6MX0jq-cnpu4nf_YfzSOjeiyn2iZ-znuMdazStkBgUEBsg7W0YXqB_CNU14tcgMqokWIeK7AmYVW87Yw',
         desc: 'Neural network visualization, soft light...',
         isFading: false
       }
     ],
+
+    // ==========================================
+    // STYLE SELECTION DECOUPLED STATE & CONFIG
+    // ==========================================
+    selectedStyleId: 'default',
+    selectedStyleName: '默认风格',
+    styles: [
+      { id: 'default', name: '默认风格', desc: '原生艺术呈现', pts: 'All', hint: '描述你想生成的画面', cssClass: 'style-default' },
+      { id: 'real', name: '极致写实', desc: '仿真现实模拟', pts: 'All', hint: '描述人像或场景', cssClass: 'style-real' },
+      { id: 'product', name: '商业大片', desc: '商业海报质感', pts: 'All', hint: '输入产品名称', cssClass: 'style-product' },
+      { id: 'tech_poster', name: '科技海报', desc: '高级感信息排版', pts: 'All', hint: '输入海报主题', cssClass: 'style-tech-poster' },
+      { id: 'travel_guide', name: '旅游攻略', desc: '手绘旅行手账', pts: 'All', hint: '如：大理 @ 3天', cssClass: 'style-travel-guide', recommendedRatio: '9:16' },
+      { id: 'travel', name: '旅游海报', desc: '旅行杂志封面', pts: 'All', hint: '如：京都极简小巷，海岛日落', cssClass: 'style-travel', recommendedRatio: '9:16' },
+      { id: 'vintage_5s', name: '复古纪实', desc: 'iPhone 5s 怀旧', pts: 'All', hint: '如：90年代香港中环', cssClass: 'style-vintage-5s', requiresImage: true, recommendedRatio: '9:16' },
+      { id: 'restore_old', name: '老照片修复', desc: '质感修复高清还原', pts: 'All', hint: '输入需要重点修复的细节', cssClass: 'style-restore-old', requiresImage: true },
+      { id: 'interior', name: '室内设计', desc: '空间重构方案', pts: 'HD+', hint: '如：现代极简、北欧风、日式', cssClass: 'style-interior', requiresImage: true, recommendedRatio: '16:9' },
+      { id: 'product_detail', name: '详情页设计', desc: '复古简约商业视觉', pts: 'HD+', hint: '输入产品名称', cssClass: 'style-product-detail', recommendedRatio: '9:16' },
+      { id: 'live_stream', name: '直播截图', desc: '还原带货现场', pts: 'HD+', hint: '输入直播内容', cssClass: 'style-live-stream', requiresImage: true, recommendedRatio: '16:9' },
+      { id: 'ccd_snap', name: 'CCD 抓拍', desc: '闪光灯氛围', pts: 'HD+', hint: '如：深夜旺角街头', cssClass: 'style-ccd-snap', requiresImage: true, recommendedRatio: '9:16' },
+      { id: 'eri_silhouette', name: '轮廓宇宙', desc: '史诗级叙事海报', pts: 'Master', hint: '输入叙事主题', cssClass: 'style-eri-silhouette' },
+      { id: 'silk_road', name: '国风月夜', desc: '宋代山水意境', pts: 'Master', hint: '输入主题名称', cssClass: 'style-silk-road' },
+      { id: 'relation_map', name: '关系图谱', desc: '作品逻辑关系梳理', pts: 'Master', hint: '如：三体、哈利波特', cssClass: 'style-relation-map', recommendedRatio: '9:16' },
+      { id: 'encyclopedia', name: '博物馆图鉴', desc: '文博拆解信息图', pts: 'Master', hint: '如：明代铠甲', cssClass: 'style-encyclopedia', recommendedRatio: '9:16' },
+      { id: 'knowledge_card', name: '知识图卡', desc: '现代百科科普图鉴', pts: 'Master', hint: '如：黑洞的形成', cssClass: 'style-knowledge-card', recommendedRatio: '9:16' },
+      { id: 'ui_upgrade', name: 'UI 视觉进化', desc: '一键转高保真设计', pts: 'Master', hint: '上传截图直接生成', cssClass: 'style-ui-upgrade', requiresImage: true, recommendedRatio: '9:16' },
+      { id: 'app_ui_design', name: 'APP UI 设计', desc: 'iOS 原生视觉全案', pts: 'Master', hint: '如：健身社交、咖啡电商', cssClass: 'style-app-ui-design', recommendedRatio: '9:16' },
+      { id: 'campaign_poster', name: '运营 activity 页', desc: '移动端运营海报', pts: 'Master', hint: '如：新品首发', cssClass: 'style-campaign-poster', recommendedRatio: '9:16' }
+    ],
+    filteredStyles: [],
 
     // ==========================================
     // PORTED PAGE 3: 充值中心 (Recharge) DATA
@@ -137,6 +160,9 @@ Page({
     this.canvasWidth = globalData.screenWidth || 375;
     this.canvasHeight = globalData.screenHeight || 667;
 
+    // 初始化并过滤出当前模式下的可见风格
+    this.updateFilteredStyles();
+
     // 拉取后端最新用户数据自愈
     this.fetchUserProfile();
   },
@@ -186,15 +212,23 @@ Page({
     }).then(res => {
       if (Array.isArray(res)) {
         const formattedItems = res.map(item => {
+          let inheritProgress = 0;
+          let inheritFading = false;
+          const existItem = (this.data.galleryItems || []).find(o => o.id === item.id);
+          if (existItem && (existItem.status === 'pending' || existItem.status === 'generating')) {
+             inheritProgress = existItem.progress || 0;
+             inheritFading = existItem.isFading || false;
+          }
           return {
             id: item.id,
             img: item.image_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYorjDASP6BiWN8BqUMV6co7VAkYKnXG-Wf8un89g-YL5MoDccZKhp_3HeLPhilkQxtPBDhuty19WHFoCbuT1YpBN120gGaPTC5paIy72m39c6GnIl_nnbn_JzXzODKR1eIfUE1WTBJELckV3kPwyf9J73afPE33chKZGkh0SUNmCWGc_C2Em84YFdPc3mHWF3I3GZZFGoebKC-xdZaBPyoIih2xCPWu6tJYWTTuOH9woDvPJ6-qdt4RBHgHaooEzQh2-rKiE6aQ',
             desc: item.prompt,
-            isFading: false,
+            isFading: inheritFading,
             mode: item.quality === 'master' ? 'flagship' : (item.quality === 'hd' ? 'advanced' : 'basic'),
             createdAt: new Date(item.created_at).getTime(),
             rootId: item.root_id,
-            status: item.status
+            status: item.status,
+            progress: inheritProgress
           };
         });
         this.setData({
@@ -203,6 +237,13 @@ Page({
       }
     }).catch(err => {
       console.error('--- [index.js] 拉取画廊历史失败: ', err);
+    });
+  },
+
+  updateFilteredStyles() {
+    // 微信小程序风格列表设计为全量可见，以增强转化并与网站行为对齐
+    this.setData({
+      filteredStyles: this.data.styles || []
     });
   },
 
@@ -218,7 +259,6 @@ Page({
 
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
-    if (this.data.isGenerating) return;
 
     // 1. 如果离开首页，立刻取消常驻 Stardust Canvas 的高频粒子重绘动画，完美避让微信同层渲染物理死锁 Crash
     if (tab !== 'home') {
@@ -267,7 +307,6 @@ Page({
   },
 
   clearPromptInput() {
-    if (this.data.isGenerating) return;
     this.setData({
       promptText: '',
       charCount: 0
@@ -278,20 +317,36 @@ Page({
   },
 
   chooseReferenceImage() {
-    if (this.data.isGenerating) return;
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
       success: (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
-        this.setData({
-          refImgUrl: tempFilePath
-        });
-        wx.showToast({
-          title: '参考图上传成功',
-          icon: 'success',
-          duration: 1500
+        wx.showLoading({ title: '处理中...', mask: true });
+        wx.getFileSystemManager().readFile({
+          filePath: tempFilePath,
+          encoding: 'base64',
+          success: (dataRes) => {
+            wx.hideLoading();
+            const base64Str = 'data:image/jpeg;base64,' + dataRes.data;
+            this.setData({
+              refImgUrl: base64Str
+            });
+            wx.showToast({
+              title: '参考图上传成功',
+              icon: 'success',
+              duration: 1500
+            });
+          },
+          fail: (err) => {
+            wx.hideLoading();
+            console.error('读取图片数据失败', err);
+            wx.showToast({
+              title: '图片解析失败',
+              icon: 'none'
+            });
+          }
         });
       },
       fail: (err) => {
@@ -301,7 +356,6 @@ Page({
   },
 
   deleteReferenceImage() {
-    if (this.data.isGenerating) return;
     this.setData({
       refImgUrl: ''
     });
@@ -313,7 +367,6 @@ Page({
   },
 
   fillPrompt(e) {
-    if (this.data.isGenerating) return;
     const text = e.currentTarget.dataset.text;
     const tabSwitch = e.currentTarget.dataset.tabSwitch;
     
@@ -330,7 +383,6 @@ Page({
   },
 
   toggleModeDropdown() {
-    if (this.data.isGenerating) return;
     this.setData({
       modeDropdownVisible: !this.data.modeDropdownVisible
     });
@@ -352,11 +404,34 @@ Page({
       modeDropdownVisible: false
     }, () => {
       this.initStardustParticles();
+      this.updateFilteredStyles(mode);
+
+      // 级联降级安全校验：若切换到更低档次，且当前风格不属于该模式权限，则重置为默认风格
+      const selectedId = this.data.selectedStyleId;
+      const currentStyle = this.data.styles.find(s => s.id === selectedId);
+      if (currentStyle) {
+        if (mode === 'basic' && currentStyle.pts !== 'All') {
+          this.setData({
+            selectedStyleId: 'default',
+            selectedStyleName: '默认风格'
+          });
+        } else if (mode === 'advanced' && currentStyle.pts === 'Master') {
+          this.setData({
+            selectedStyleId: 'default',
+            selectedStyleName: '默认风格'
+          });
+        }
+      }
+    });
+  },
+
+  navToBilling() {
+    wx.navigateTo({
+      url: '/pages/billing/billing'
     });
   },
 
   toggleEnhance() {
-    if (this.data.isGenerating) return;
     
     // 防范重复点击并发调用
     if (this.data.isEnhancing) return;
@@ -448,7 +523,6 @@ Page({
   },
 
   openStyleModal() {
-    if (this.data.isGenerating) return;
     this.setData({
       styleModalVisible: true,
       modeDropdownVisible: false
@@ -462,14 +536,48 @@ Page({
   },
 
   selectStyle(e) {
-    const styleName = e.currentTarget.dataset.style;
-    const currentText = this.data.promptText;
-    const newText = currentText ? `${currentText}，${styleName}风格` : `${styleName}风格`;
+    const styleId = e.currentTarget.dataset.style;
+    const currentSelected = this.data.selectedStyleId;
     
-    this.setData({
-      promptText: newText,
-      charCount: newText.length,
+    // 如果点击已选中的，则反选回 default
+    const newSelected = currentSelected === styleId ? 'default' : styleId;
+    const currentStyleObj = this.data.styles.find(s => s.id === newSelected);
+    const styleName = currentStyleObj ? currentStyleObj.name : '默认风格';
+    
+    const updateObj = {
+      selectedStyleId: newSelected,
+      selectedStyleName: styleName,
       styleModalVisible: false
+    };
+
+    // 选中新风格后，根据其所属的最低模式阶梯，自动升级对应的生图模式
+    if (newSelected !== 'default' && currentStyleObj) {
+      const pts = currentStyleObj.pts;
+      const currentMode = this.data.currentMode;
+      
+      if (pts === 'Master' && currentMode !== 'flagship') {
+        updateObj.currentMode = 'flagship';
+        updateObj.currentModeLabel = '旗舰模式 (15点)';
+        wx.showToast({
+          title: '已自动切换至旗舰模式',
+          icon: 'none',
+          duration: 1500
+        });
+      } else if (pts === 'HD+' && currentMode === 'basic') {
+        updateObj.currentMode = 'advanced';
+        updateObj.currentModeLabel = '进阶模式 (10点)';
+        wx.showToast({
+          title: '已自动切换至进阶模式',
+          icon: 'none',
+          duration: 1500
+        });
+      }
+    }
+
+    this.setData(updateObj, () => {
+      if (updateObj.currentMode) {
+        this.initStardustParticles();
+      }
     });
   },
 
@@ -477,7 +585,10 @@ Page({
   // MAGIC WAND ITERATIVE REFINE SYSTEM LOGIC (PHASE 3)
   // ========================================================
   handleRefine(e) {
-    if (this.data.isGenerating) return;
+    if (this.data.isGenerating) {
+      wx.showToast({ title: '当前正在生成，请稍后再微调', icon: 'none' });
+      return;
+    }
     
     let item = null;
     if (e && e.currentTarget && e.currentTarget.dataset) {
@@ -1034,9 +1145,11 @@ Page({
   // ========================================================
   startGeneration(e) {
     const prompt = this.data.promptText.trim();
-    if (this.data.isGenerating || !prompt) {
+    if (this.data.isGenerating) {
+      wx.showToast({ title: 'AI正在专注为您创作中，请等待上一幅完成', icon: 'none' });
       return;
     }
+    if (!prompt) return;
 
     const isRefine = this.data.isRefining;
     const now = Date.now();
@@ -1155,7 +1268,7 @@ Page({
       data: {
         prompt: prompt,
         quality: qualityMap,
-        style: 'default',
+        style: this.data.selectedStyleId,
         ref_image_url: this.data.refImgUrl || null,
         parent_id: this.data.refineParentId || null,
         root_id: this.data.refineRootId || null,
@@ -1174,7 +1287,8 @@ Page({
         isFading: false,
         mode: mode === 'flagship' ? 'flagship' : (mode === 'advanced' ? 'advanced' : 'basic'),
         createdAt: Date.now(),
-        status: 'pending'
+        status: 'pending',
+        progress: 0
       };
       
       this.setData({
@@ -1208,6 +1322,38 @@ Page({
     if (this.generationPollTimer) {
       clearInterval(this.generationPollTimer);
     }
+    if (this.fakeProgressTimer) {
+      clearInterval(this.fakeProgressTimer);
+    }
+    
+    // --- 启动独立的高频平滑缓动算法 (Fake Progress) ---
+    this.fakeProgressTimer = setInterval(() => {
+      const currentItems = this.data.galleryItems;
+      const targetIndex = currentItems.findIndex(item => item.id === taskId);
+      
+      // 仅当卡片存在且处于等待状态时进行进度动画
+      if (targetIndex !== -1 && (currentItems[targetIndex].status === 'pending' || currentItems[targetIndex].status === 'generating')) {
+        let currentProgress = currentItems[targetIndex].progress || 0;
+        let increment = 1;
+        
+        // 动态非线性缓动：前期快速攀升，后期陷入长尾等待
+        if (currentProgress < 40) increment = Math.floor(Math.random() * 4) + 2; // 2~5
+        else if (currentProgress < 70) increment = Math.floor(Math.random() * 3) + 1; // 1~3
+        else if (currentProgress < 90) increment = 1;
+        else if (currentProgress < 99 && Math.random() > 0.7) increment = 1; // 极大概率停滞，制造真实思考感
+        else increment = 0;
+        
+        if (increment > 0) {
+          const key = `galleryItems[${targetIndex}].progress`;
+          this.setData({ [key]: Math.min(99, currentProgress + increment) });
+        }
+      } else {
+        // 如果卡片已经被清除或状态已终结，自毁定时器
+        clearInterval(this.fakeProgressTimer);
+        this.fakeProgressTimer = null;
+      }
+    }, 800);
+    // ------------------------------------------------
     
     let pollCount = 0;
     const maxPolls = 60; // 最多轮询 120 秒
@@ -1217,6 +1363,10 @@ Page({
       if (pollCount > maxPolls) {
         clearInterval(this.generationPollTimer);
         this.generationPollTimer = null;
+        if (this.fakeProgressTimer) {
+          clearInterval(this.fakeProgressTimer);
+          this.fakeProgressTimer = null;
+        }
         
         // 超时就地过滤清理 pending 卡片，防止界面垃圾数据
         const filteredItems = this.data.galleryItems.filter(item => item.id !== taskId);
@@ -1242,6 +1392,10 @@ Page({
         if (statusRes.status === 'success') {
           clearInterval(this.generationPollTimer);
           this.generationPollTimer = null;
+          if (this.fakeProgressTimer) {
+            clearInterval(this.fakeProgressTimer);
+            this.fakeProgressTimer = null;
+          }
           
           const latestImg = statusRes.image_url;
           const shouldKeepRefining = isRefineValid && nextIterations > 0 && Date.now() < nextExpireTime;
@@ -1258,7 +1412,8 @@ Page({
             if (item.id === taskId) {
               return Object.assign({}, item, {
                 status: 'success',
-                img: latestImg
+                img: latestImg,
+                progress: 100
               });
             }
             return item;
@@ -1298,6 +1453,10 @@ Page({
         } else if (statusRes.status === 'failed') {
           clearInterval(this.generationPollTimer);
           this.generationPollTimer = null;
+          if (this.fakeProgressTimer) {
+            clearInterval(this.fakeProgressTimer);
+            this.fakeProgressTimer = null;
+          }
           
           // 物理移除失败的卡片数据
           const filteredItems = this.data.galleryItems.filter(item => item.id !== taskId);
